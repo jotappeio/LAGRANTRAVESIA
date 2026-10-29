@@ -1,6 +1,6 @@
 {
   "evento": "La Gran Travesía 100K",
-  "actualizado": "2026-10-29 01:59:05",
+  "actualizado": "2026-10-29 01:59:07",
   "corredores": [
     {
       "dorsal": 101,
@@ -64,7 +64,7 @@
       "nombre": "Pedro Morales",
       "categoria": "100K",
       "estado": "En Carrera",
-      "DISTANCIA": "-",
+      "DISTANCIA": "50K",
       "CATEGORIA": "-",
       "ESTADO": "FINALIZADO",
       "LARGADA": "10:00:00",
