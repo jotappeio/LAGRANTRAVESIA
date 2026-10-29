@@ -38,7 +38,6 @@
         .brand-header h1 { margin: 6px 0 4px 0; font-size: 26px; font-weight: 700; color: #ffffff; }
         .brand-header p { margin: 0; font-size: 13px; color: var(--lse-muted); }
 
-        /* Imagen Portada (Banner) Estilo LSE */
         .event-banner {
             width: 100%;
             max-height: 400px;
@@ -49,7 +48,6 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
-        /* Selector de Mapas */
         .map-selector {
             display: flex;
             justify-content: center;
@@ -103,7 +101,6 @@
         .update-timestamp { text-align: right; font-size: 11px; color: var(--lse-muted); margin-bottom: 8px; }
         .my-tooltip { background: var(--lse-card); color: var(--lse-gold); border: 1px solid var(--lse-orange); font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
 
-        /* Contenedor de Video Vimeo */
         .video-container {
             background-color: var(--lse-card); border: 1px solid var(--lse-border);
             border-radius: 8px; padding: 15px; margin: 30px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.4); text-align: center;
@@ -127,10 +124,8 @@
         <p id="lblSubInfo">Resultados Oficiales en Tiempo Real</p>
     </div>
 
-    <!-- IMAGEN DE PORTADA DINÁMICA -->
     <div id="portadaContainer"></div>
 
-    <!-- SELECTOR DE MAPAS PÚBLICO -->
     <div class="map-selector">
         <button class="btn-map-tab active" id="tabRuta1" onclick="cambiarMapaPublico(1)">Ver Ruta <span id="lblTab1">100K</span></button>
         <button class="btn-map-tab" id="tabRuta2" onclick="cambiarMapaPublico(2)">Ver Ruta <span id="lblTab2">50K</span></button>
@@ -154,7 +149,6 @@
     <div id="updateInfo" class="update-timestamp">Actualizando datos...</div>
     <div id="contenedorSecciones"></div>
 
-    <!-- VIDEO VIMEO AL PIE -->
     <div class="video-container" id="vimeoSection" style="display:none;">
         <h3>Video Oficial del Evento</h3>
         <div class="video-responsive">
@@ -168,7 +162,6 @@
     </div>
 </div>
 
-<!-- Leaflet y GPX -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
 
@@ -184,15 +177,15 @@
         document.getElementById('lblTab2').innerText = r2;
 
         let cab = localStorage.getItem("lse_logo_cabecera");
-        if (cab) document.getElementById('logoCabeceraContainer').innerHTML = `<img src="${cab}">`;
+        if (cab) document.getElementById('logoCabeceraContainer').innerHTML = `<img src="${cab}" alt="Logo">`;
 
         let portada = localStorage.getItem("lse_portada_img");
         if (portada) {
-            document.getElementById('portadaContainer').innerHTML = `<img src="${portada}" class="event-banner" alt="Portada Evento">`;
+            document.getElementById('portadaContainer').innerHTML = `<img src="${portada}" class="event-banner" alt="Portada">`;
         }
 
         let pie = localStorage.getItem("lse_logo_pie");
-        if (pie) document.getElementById('logoPieContainer').innerHTML = `<img src="${pie}">`;
+        if (pie) document.getElementById('logoPieContainer').innerHTML = `<img src="${pie}" alt="Auspiciadores">`;
 
         let vimeoId = localStorage.getItem("lse_vimeo_id");
         if (vimeoId) {
@@ -352,3 +345,4 @@
 </script>
 
 </body>
+</html>
