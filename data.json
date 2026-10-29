@@ -1,6 +1,6 @@
 {
   "evento": "La Gran Travesía 100K",
-  "actualizado": "2026-10-29 03:12:41",
+  "actualizado": "2026-10-29 03:12:46",
   "corredores": [
     {
       "dorsal": 101,
@@ -99,7 +99,7 @@
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -108,7 +108,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 107,
@@ -117,7 +117,7 @@
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -126,7 +126,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 108,
@@ -135,7 +135,7 @@
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -144,7 +144,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 109,
@@ -153,7 +153,7 @@
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -162,7 +162,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 110,
@@ -171,7 +171,7 @@
       "categoria": "PAREJAS",
       "sexo": "M",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -180,7 +180,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 111,
@@ -189,7 +189,7 @@
       "categoria": "PAREJAS",
       "sexo": "M",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -198,7 +198,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 112,
@@ -207,7 +207,7 @@
       "categoria": "INDIVIDUAL",
       "sexo": "F",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -216,7 +216,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 113,
@@ -225,7 +225,7 @@
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -234,7 +234,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 114,
@@ -243,7 +243,7 @@
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -252,7 +252,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 115,
@@ -261,7 +261,7 @@
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -270,7 +270,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 116,
@@ -279,7 +279,7 @@
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -288,7 +288,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 117,
@@ -297,7 +297,7 @@
       "categoria": "PAREJAS",
       "sexo": "F",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -306,7 +306,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 118,
@@ -315,7 +315,7 @@
       "categoria": "PAREJAS",
       "sexo": "F",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -324,7 +324,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     },
     {
       "dorsal": 119,
@@ -333,7 +333,7 @@
       "categoria": "INDIVIDUAL",
       "sexo": "F",
       "estado": "EN CARRERA",
-      "LARGADA": "-",
+      "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
       "KM 30": "-",
@@ -342,7 +342,7 @@
       "KM60": "-",
       "KM81": "-",
       "META": "-",
-      "TIEMPO DE CARRERA": "-"
+      "TIEMPO DE CARRERA": "00:00:00"
     }
   ]
 }
