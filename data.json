@@ -1,6 +1,6 @@
 {
   "evento": "La Gran Travesía 100K",
-  "actualizado": "2026-10-29 01:59:03",
+  "actualizado": "2026-10-29 01:59:05",
   "corredores": [
     {
       "dorsal": 101,
@@ -45,7 +45,7 @@
       "nombre": "Carlos Silva",
       "categoria": "100K",
       "estado": "En Carrera",
-      "DISTANCIA": "-",
+      "DISTANCIA": "100K",
       "CATEGORIA": "-",
       "ESTADO": "FINALIZADO",
       "LARGADA": "10:00:00",
