@@ -127,8 +127,8 @@
     <div id="portadaContainer"></div>
 
     <div class="map-selector">
-        <button class="btn-map-tab active" id="tabRuta1" onclick="cambiarMapaPublico(1)">Ver Ruta <span id="lblTab1">100K</span></button>
-        <button class="btn-map-tab" id="tabRuta2" onclick="cambiarMapaPublico(2)">Ver Ruta <span id="lblTab2">50K</span></button>
+        <button class="btn-map-tab active" id="tabRuta1" onclick="cambiarMapaPublico(1)"><span id="lblTab1">100K</span></button>
+        <button class="btn-map-tab" id="tabRuta2" onclick="cambiarMapaPublico(2)"><span id="lblTab2">50K</span></button>
     </div>
 
     <div class="map-wrapper">
@@ -212,12 +212,12 @@
         }
 
         // Cargar Ruta 1
-        let gpx1 = localStorage.getItem("lse_gpx_ruta1");
-        if (gpx1) {
-            new L.GPX(gpx1, { async: true, polyline_options: { color: '#f97316', weight: 4, opacity: 0.9 } })
+        let url1 = localStorage.getItem("lse_url_gpx1");
+        if (url1 && url1.trim() !== "") {
+            new L.GPX(url1, { async: true, polyline_options: { color: '#f97316', weight: 4, opacity: 0.9 } })
                 .on('loaded', e => {
                     bounds1 = e.target.getBounds();
-                    mapPub1.fitBounds(bounds1);
+                    if (mapPub1) mapPub1.fitBounds(bounds1);
                 }).addTo(mapPub1);
         }
         let pcs1 = localStorage.getItem("lse_pcs_ruta1");
@@ -229,12 +229,11 @@
         }
 
         // Cargar Ruta 2
-        let gpx2 = localStorage.getItem("lse_gpx_ruta2");
-        if (gpx2) {
-            new L.GPX(gpx2, { async: true, polyline_options: { color: '#fbbf24', weight: 4, opacity: 0.9 } })
+        let url2 = localStorage.getItem("lse_url_gpx2");
+        if (url2 && url2.trim() !== "") {
+            new L.GPX(url2, { async: true, polyline_options: { color: '#fbbf24', weight: 4, opacity: 0.9 } })
                 .on('loaded', e => {
                     bounds2 = e.target.getBounds();
-                    // No hacemos fitBounds automático inmediato aquí para evitar el bug del mapa oculto
                 }).addTo(mapPub2);
         }
         let pcs2 = localStorage.getItem("lse_pcs_ruta2");
@@ -245,7 +244,6 @@
             });
         }
 
-        // Forzar render inicial de la Ruta 1 visible
         setTimeout(() => {
             if (mapPub1) {
                 mapPub1.invalidateSize();
@@ -271,6 +269,15 @@
             if (num === 2 && mapPub2) {
                 mapPub2.invalidateSize();
                 if (bounds2) mapPub2.fitBounds(bounds2);
+                else {
+                    let url2 = localStorage.getItem("lse_url_gpx2");
+                    if (url2) {
+                        new L.GPX(url2, { async: true }).on('loaded', e => {
+                            bounds2 = e.target.getBounds();
+                            mapPub2.fitBounds(bounds2);
+                        }).addTo(mapPub2);
+                    }
+                }
             }
         }, 150);
     }
@@ -373,4 +380,3 @@
 </script>
 
 </body>
-</html>
