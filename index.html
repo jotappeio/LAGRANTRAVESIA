@@ -22,29 +22,30 @@
             background-color: var(--lse-dark);
             color: var(--lse-text);
             margin: 0;
-            padding: 20px;
+            padding: 10px;
+            box-sizing: border-box;
         }
 
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
         .brand-header {
             text-align: center;
             padding: 10px 0 15px 0;
             border-bottom: 1px solid var(--lse-border);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        .brand-header img { max-height: 70px; margin-bottom: 10px; }
-        .brand-header span { color: var(--lse-orange); font-size: 11px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; }
-        .brand-header h1 { margin: 6px 0 4px 0; font-size: 26px; font-weight: 700; color: #ffffff; }
-        .brand-header p { margin: 0; font-size: 13px; color: var(--lse-muted); }
+        .brand-header img { max-height: 60px; margin-bottom: 8px; width: auto; max-width: 100%; }
+        .brand-header span { color: var(--lse-orange); font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+        .brand-header h1 { margin: 6px 0 4px 0; font-size: 22px; font-weight: 700; color: #ffffff; }
+        .brand-header p { margin: 0; font-size: 12px; color: var(--lse-muted); }
 
         .event-banner {
             width: 100%;
-            max-height: 400px;
+            max-height: 250px;
             object-fit: cover;
             border-radius: 8px;
             border: 1px solid var(--lse-border);
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
@@ -52,66 +53,70 @@
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .btn-map-tab {
             background-color: var(--lse-card); color: var(--lse-text); border: 1px solid var(--lse-border);
-            padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 12px; text-transform: uppercase;
+            padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 11px; text-transform: uppercase;
         }
         .btn-map-tab.active { background-color: var(--lse-orange); border-color: var(--lse-orange); color: white; }
 
         .map-wrapper {
             background-color: var(--lse-card); border: 1px solid var(--lse-border);
-            border-radius: 8px; padding: 15px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border-radius: 8px; padding: 10px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
-        .map-pane { height: 400px; border-radius: 6px; border: 1px solid var(--lse-border); display: none; width: 100%; }
+        .map-pane { height: 350px; border-radius: 6px; border: 1px solid var(--lse-border); display: none; width: 100%; z-index: 1; }
         .map-pane.active { display: block; }
 
         .search-container {
             background-color: var(--lse-card); border: 1px solid var(--lse-border); border-radius: 8px;
-            padding: 15px; margin-bottom: 25px; display: flex; gap: 15px; flex-wrap: wrap;
+            padding: 12px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; box-sizing: border-box;
         }
         .search-container input, .search-container select {
-            flex: 1; min-width: 200px; padding: 12px 15px; font-size: 14px;
-            background-color: var(--lse-dark); border: 1px solid var(--lse-border); color: white; border-radius: 6px; outline: none;
+            flex: 1; min-width: 100%; padding: 10px 12px; font-size: 13px;
+            background-color: var(--lse-dark); border: 1px solid var(--lse-border); color: white; border-radius: 6px; outline: none; box-sizing: border-box;
+        }
+        @media(min-width: 600px) {
+            .search-container input, .search-container select { min-width: 200px; }
         }
 
         .table-container {
             background-color: var(--lse-card); border: 1px solid var(--lse-border);
-            border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.4); margin-bottom: 30px;
+            border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.4); margin-bottom: 25px;
         }
         .section-title {
-            background-color: #131b2e; color: var(--lse-gold); padding: 12px 15px;
-            font-size: 14px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--lse-border);
-            display: flex; justify-content: space-between;
+            background-color: #131b2e; color: var(--lse-gold); padding: 10px 12px;
+            font-size: 13px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--lse-border);
+            display: flex; justify-content: space-between; align-items: center;
         }
 
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid var(--lse-border); }
-        th { background-color: #0b101c; color: var(--lse-muted); font-weight: 700; text-transform: uppercase; font-size: 11px; }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; white-space: nowrap; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid var(--lse-border); }
+        th { background-color: #0b101c; color: var(--lse-muted); font-weight: 700; text-transform: uppercase; font-size: 10px; }
         tr:hover { background-color: rgba(249, 115, 22, 0.03); }
 
-        .badge { padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 10px; }
+        .badge { padding: 3px 6px; border-radius: 4px; font-weight: 700; font-size: 9px; }
         .badge-fin { background-color: #059669; color: white; }
         .badge-carrera { background-color: #0284c7; color: white; }
         .badge-dnf { background-color: #dc2626; color: white; }
 
-        .pos-badge { background-color: var(--lse-orange); color: white; font-weight: 800; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+        .pos-badge { background-color: var(--lse-orange); color: white; font-weight: 800; padding: 2px 5px; border-radius: 4px; font-size: 11px; }
         .tiempo-carrera { color: var(--lse-gold); font-weight: 800; }
-        .update-timestamp { text-align: right; font-size: 11px; color: var(--lse-muted); margin-bottom: 8px; }
-        .my-tooltip { background: var(--lse-card); color: var(--lse-gold); border: 1px solid var(--lse-orange); font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
+        .update-timestamp { text-align: right; font-size: 10px; color: var(--lse-muted); margin-bottom: 6px; }
+        .my-tooltip { background: var(--lse-card); color: var(--lse-gold); border: 1px solid var(--lse-orange); font-weight: bold; font-size: 10px; padding: 2px 5px; border-radius: 4px; }
 
         .video-container {
             background-color: var(--lse-card); border: 1px solid var(--lse-border);
-            border-radius: 8px; padding: 15px; margin: 30px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.4); text-align: center;
+            border-radius: 8px; padding: 12px; margin: 20px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.4); text-align: center; box-sizing: border-box;
         }
-        .video-container h3 { color: var(--lse-gold); text-transform: uppercase; font-size: 14px; margin-top: 0; }
+        .video-container h3 { color: var(--lse-gold); text-transform: uppercase; font-size: 13px; margin-top: 0; }
         .video-responsive { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 6px; }
         .video-responsive iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
-        .brand-footer { text-align: center; padding: 25px 0; border-top: 1px solid var(--lse-border); margin-top: 20px; }
-        .brand-footer img { max-height: 50px; margin-top: 10px; }
-        .brand-footer p { font-size: 12px; color: var(--lse-muted); margin: 0; }
+        .brand-footer { text-align: center; padding: 20px 0; border-top: 1px solid var(--lse-border); margin-top: 15px; }
+        .brand-footer img { max-height: 45px; margin-top: 8px; width: auto; max-width: 100%; }
+        .brand-footer p { font-size: 11px; color: var(--lse-muted); margin: 0; }
     </style>
 </head>
 <body>
@@ -202,13 +207,16 @@
     let mapPub1, mapPub2, bounds1, bounds2;
 
     function initMapasPublicos() {
+        let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+        let sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' });
+
         if (!mapPub1) {
-            mapPub1 = L.map('mapPublic1').setView([-33.35, -70.65], 11);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(mapPub1);
+            mapPub1 = L.map('mapPublic1', { center: [-33.35, -70.65], zoom: 11, layers: [osm] });
+            L.control.layers({ "Mapa Estándar": osm, "Satélite": sat }).addTo(mapPub1);
         }
         if (!mapPub2) {
-            mapPub2 = L.map('mapPublic2').setView([-33.35, -70.65], 11);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(mapPub2);
+            mapPub2 = L.map('mapPublic2', { center: [-33.35, -70.65], zoom: 11, layers: [osm] });
+            L.control.layers({ "Mapa Estándar": osm, "Satélite": sat }).addTo(mapPub2);
         }
 
         // Cargar Ruta 1
@@ -356,7 +364,7 @@
         for (let [gNombre, atletas] of Object.entries(grupos)) {
             let html = `<div class="table-container">
                 <div class="section-title"><span>${gNombre}</span><span style="font-size:11px; color:var(--lse-muted);">${atletas.length} Atletas</span></div>
-                <div style="overflow-x:auto;"><table><thead><tr><th>Pos</th><th>Dorsal</th><th>Atleta</th><th>Estado</th><th style="color:var(--lse-gold);">Tiempo</th>`;
+                <div class="table-responsive"><table><thead><tr><th>Pos</th><th>Dorsal</th><th>Atleta</th><th>Estado</th><th style="color:var(--lse-gold);">Tiempo</th>`;
             columnasDinamicasGlobales.forEach(col => html += `<th>${col}</th>`);
             html += `</tr></thead><tbody>`;
 
@@ -380,3 +388,4 @@
 </script>
 
 </body>
+</html>
