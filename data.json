@@ -1,6 +1,6 @@
 {
   "evento": "La Gran Travesía 100K",
-  "actualizado": "2026-10-29 07:32:44",
+  "actualizado": "2026-10-29 07:33:00",
   "corredores": [
     {
       "dorsal": 101,
@@ -170,7 +170,7 @@
       "distancia": "50K",
       "categoria": "PAREJAS",
       "sexo": "M",
-      "estado": "EN CARRERA",
+      "estado": "FINALIZADO",
       "LARGADA": "10:00:00",
       "KM 10": "-",
       "KM20": "-",
