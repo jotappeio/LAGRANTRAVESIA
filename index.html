@@ -208,7 +208,6 @@
     let mapPub1, mapPub2, bounds1, bounds2;
 
     function initMapasPublicos(cfg) {
-        // Capas base: Estándar, Satélite y Topográfico con Curvas de Nivel
         let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' });
         let sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' });
         let topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap (CC-BY-SA)' });
@@ -220,7 +219,7 @@
         };
 
         if (!mapPub1) {
-            mapPub1 = L.map('mapPublic1', { center: [-33.35, -70.65], zoom: 11, layers: [topo] }); // Por defecto arranca en Topo
+            mapPub1 = L.map('mapPublic1', { center: [-33.35, -70.65], zoom: 11, layers: [topo] });
             L.control.layers(baseMaps).addTo(mapPub1);
         }
         if (!mapPub2) {
@@ -228,7 +227,6 @@
             L.control.layers(baseMaps).addTo(mapPub2);
         }
 
-        // Cargar Ruta 1 con renderizado robusto
         let url1 = cfg.url_gpx1 ? cfg.url_gpx1.trim() : "";
         if (url1 !== "") {
             new L.GPX(url1, { 
@@ -246,7 +244,6 @@
             });
         }
 
-        // Cargar Ruta 2 con renderizado robusto
         let url2 = cfg.url_gpx2 ? cfg.url_gpx2.trim() : "";
         if (url2 !== "") {
             new L.GPX(url2, { 
@@ -341,6 +338,18 @@
         return (parseInt(p[0]) * 3600) + (parseInt(p[1]) * 60) + (p[2] ? parseInt(p[2]) : 0);
     }
 
+    // Función auxiliar para contar cuántos Puntos de Control (columnas dinámicas) tiene marcados un corredor
+    function contarPCsRegistrados(corredor) {
+        let count = 0;
+        columnasDinamicasGlobales.forEach(col => {
+            let val = corredor[col];
+            if (val && val !== "-" && val.trim() !== "") {
+                count++;
+            }
+        });
+        return count;
+    }
+
     function procesarYRenderizar() {
         let txt = document.getElementById('searchInput').value.toLowerCase();
         let fd = document.getElementById('filtroDistancia').value;
@@ -353,14 +362,29 @@
             return matchTxt && matchDist && matchCat;
         });
 
+        // REGLA DE ORDENAMIENTO PROFESIONAL EN VIVO:
+        // 1. Los DNF (retirados) van siempre al fondo de la tabla.
+        // 2. Prioridad 1: Quien tenga más Puntos de Control registrados (va más adelante en la ruta).
+        // 3. Prioridad 2 (Desempate): Menor tiempo de carrera acumulado.
         filtrados.sort((a, b) => {
             let ea = (a.estado||"").toUpperCase(), eb = (b.estado||"").toUpperCase();
-            let fa = ea.includes("FIN")||ea.includes("FINALIZADO"), fb = eb.includes("FIN")||eb.includes("FINALIZADO");
-            if (fa && !fb) return -1; if (!fa && fb) return 1;
-            if (fa && fb) return convertirHoraASegundos(a["TIEMPO DE CARRERA"]) - convertirHoraASegundos(b["TIEMPO DE CARRERA"]);
-            if (ea.includes("DNF") && !eb.includes("DNF")) return 1;
-            if (!ea.includes("DNF") && eb.includes("DNF")) return -1;
-            return 0;
+            let aDnf = ea.includes("DNF"), bDnf = eb.includes("DNF");
+            
+            if (aDnf && !bDnf) return 1;
+            if (!aDnf && bDnf) return -1;
+
+            let pcsA = contarPCsRegistrados(a);
+            let pcsB = contarPCsRegistrados(b);
+
+            // Si tienen distinto número de puntos de control, el que tenga más va primero
+            if (pcsA !== pcsB) {
+                return pcsB - pcsA; // Mayor cantidad de PCs primero
+            }
+
+            // Si están en el mismo punto de control, desempata el menor tiempo de carrera
+            let ta = convertirHoraASegundos(a["TIEMPO DE CARRERA"]);
+            let tb = convertirHoraASegundos(b["TIEMPO DE CARRERA"]);
+            return ta - tb;
         });
 
         let grupos = {};
@@ -384,7 +408,9 @@
                 let badge = "badge-carrera", eu = (c.estado||"").toUpperCase();
                 if (eu.includes("FIN")||eu.includes("FINALIZADO")) badge = "badge-fin";
                 else if (eu.includes("DNF")) badge = "badge-dnf";
-                let pos = (eu.includes("FIN")||eu.includes("FINALIZADO")) ? `<span class="pos-badge">${idx+1}</span>` : `-`;
+                
+                // Asigna posición provisoria (1°, 2°, 3°, 4°...) a todos los que estén compitiendo o hayan finalizado
+                let pos = !eu.includes("DNF") ? `<span class="pos-badge">${idx+1}</span>` : `-`;
 
                 html += `<tr><td>${pos}</td><td><b>#${c.dorsal}</b></td><td>${c.name || c.nombre}</td><td><span class="badge ${badge}">${c.estado}</span></td><td class="tiempo-carrera">${c["TIEMPO DE CARRERA"]||'-'}</td>`;
                 columnasDinamicasGlobales.forEach(col => html += `<td>${c[col]||'-'}</td>`);
