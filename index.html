@@ -12,66 +12,27 @@
             margin: 0;
             padding: 20px;
         }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            color: #f39c12;
-            margin-bottom: 25px;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: #f39c12; margin-bottom: 25px; }
         .search-box {
-            background-color: #162247;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
+            background-color: #162247; padding: 20px; border-radius: 8px; margin-bottom: 25px;
         }
         .search-box input {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border-radius: 4px;
-            border: 1px solid #2c3e50;
-            background-color: #0b1329;
-            color: white;
-            box-sizing: border-box;
+            width: 100%; padding: 12px; font-size: 16px; border-radius: 4px;
+            border: 1px solid #2c3e50; background-color: #0b1329; color: white; box-sizing: border-box;
         }
         table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #162247;
-            border-radius: 8px;
-            overflow: hidden;
+            width: 100%; border-collapse: collapse; background-color: #162247;
+            border-radius: 8px; overflow: hidden;
         }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #2c3e50;
-            font-size: 14px;
-        }
-        th {
-            background-color: #1f2d5a;
-            color: #f39c12;
-        }
-        tr:hover {
-            background-color: #1c2b59;
-        }
-        .badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 12px;
-        }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #2c3e50; font-size: 14px; }
+        th { background-color: #1f2d5a; color: #f39c12; text-transform: uppercase; }
+        tr:hover { background-color: #1c2b59; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
         .badge-fin { background-color: #27ae60; color: white; }
         .badge-carrera { background-color: #2980b9; color: white; }
         .badge-dnf { background-color: #c0392b; color: white; }
-        .update-info {
-            text-align: right;
-            font-size: 12px;
-            color: #95a5a6;
-            margin-bottom: 10px;
-        }
+        .update-info { text-align: right; font-size: 12px; color: #95a5a6; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -80,46 +41,60 @@
     <h1>LA GRAN TRAVESÍA 100K</h1>
     
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Buscar por Nombre o Dorsal (Ej: 101 o Juan)..." onkeyup="filtrarTabla()">
+        <input type="text" id="searchInput" placeholder="Buscar por Nombre o Dorsal..." onkeyup="filtrarTabla()">
     </div>
 
     <div id="updateInfo" class="update-info">Actualizando datos...</div>
 
-    <table id="tablaCorredores">
-        <thead>
-            <tr>
-                <th>Dorsal</th>
-                <th>Atleta</th>
-                <th>Categoría</th>
-                <th>Estado</th>
-                <th>Largada</th>
-                <th>Km 50</th>
-                <th>Km 81</th>
-                <th>Meta</th>
-            </tr>
-        </thead>
-        <tbody id="cuerpoTabla">
-            <!-- Los datos se cargarán dinámicamente desde data.json -->
-        </tbody>
-    </table>
+    <div style="overflow-x: auto;">
+        <table id="tablaCorredores">
+            <thead>
+                <tr id="tableHeaders"></tr>
+            </thead>
+            <tbody id="cuerpoTabla"></tbody>
+        </table>
+    </div>
 </div>
 
 <script>
     let todosLosCorredores = [];
 
     function cargarDatos() {
-        // Añadimos timestamp para evitar caché agresiva en móviles y GitHub Pages
         fetch('data.json?t=' + new Date().getTime())
             .then(response => response.json())
             .then(data => {
                 todosLosCorredores = data.corredores;
                 document.getElementById('updateInfo').innerText = "Última actualización: " + data.actualizado;
-                mostrarCorredores(todosLosCorredores);
+                
+                if (todosLosCorredores.length > 0) {
+                    construirTabla(todosLosCorredores);
+                }
             })
             .catch(error => console.error('Error al cargar los datos:', error));
     }
 
-    function mostrarCorredores(corredores) {
+    function construirTabla(corredores) {
+        const primerCorredor = corredores[0];
+        // Columnas fijas que ignoramos para la lista dinámica de puntos
+        const ignorar = ["dorsal", "nombre", "categoria", "estado"];
+        const columnasDinamicas = Object.keys(primerCorredor).filter(k => !ignorar.includes(k));
+
+        const trHead = document.getElementById('tableHeaders');
+        let headHTML = `
+            <th>Dorsal</th>
+            <th>Atleta</th>
+            <th>Categoría</th>
+            <th>Estado</th>
+        `;
+        columnasDinamicas.forEach(col => {
+            headHTML += `<th>${col}</th>`;
+        });
+        trHead.innerHTML = headHTML;
+
+        mostrarFiltrados(corredores, columnasDinamicas);
+    }
+
+    function mostrarFiltrados(corredores, columnasDinamicas) {
         const tbody = document.getElementById('cuerpoTabla');
         tbody.innerHTML = "";
 
@@ -128,17 +103,20 @@
             if (c.estado === "FIN") badgeClass = "badge-fin";
             if (c.estado === "DNF") badgeClass = "badge-dnf";
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
+            let trHTML = `
                 <td><strong>#${c.dorsal}</strong></td>
                 <td>${c.nombre}</td>
                 <td>${c.categoria}</td>
                 <td><span class="badge ${badgeClass}">${c.estado}</span></td>
-                <td>${c.largada || '-'}</td>
-                <td>${c.km50 || '-'}</td>
-                <td>${c.km81 || '-'}</td>
-                <td><strong>${c.meta || '-'}</strong></td>
             `;
+
+            columnasDinamicas.forEach(col => {
+                let valor = c[col] || '-';
+                trHTML += `<td>${valor}</td>`;
+            });
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = trHTML;
             tbody.appendChild(tr);
         });
     }
@@ -148,10 +126,14 @@
         const filtrados = todosLosCorredores.filter(c => {
             return c.nombre.toLowerCase().includes(filtro) || c.dorsal.toString().includes(filtro);
         });
-        mostrarCorredores(filtrados);
+        
+        if (filtrados.length > 0) {
+            const ignorar = ["dorsal", "nombre", "categoria", "estado"];
+            const columnasDinamicas = Object.keys(filtrados[0]).filter(k => !ignorar.includes(k));
+            mostrarFiltrados(filtrados, columnasDinamicas);
+        }
     }
 
-    // Cargar al iniciar y actualizar automáticamente cada 15 segundos
     cargarDatos();
     setInterval(cargarDatos, 15000);
 </script>
