@@ -78,7 +78,7 @@
     <h1>PANEL DE CONTROL TÉCNICO - LA GRAN TRAVESÍA 100K</h1>
     
     <div class="grid">
-        <!-- MAPA, GPX Y PUNTOS INTELIGENTES POR KILÓMETRO -->
+        <!-- MAPA, GPX Y PUNTOS CON NOMBRE VISIBLE -->
         <div class="panel">
             <h3>Visualización de Ruta &amp; Controles</h3>
             <div id="map"></div>
@@ -90,7 +90,7 @@
 
             <hr style="border: 0; border-top: 1px solid #2c3e50; margin: 15px 0;">
 
-            <h3>2. Añadir Punto de Control por Kilómetro (Automático)</h3>
+            <h3>2. Añadir Punto de Control por Kilómetro</h3>
             <div class="form-row">
                 <div>
                     <label>Nombre del Control:</label>
@@ -101,15 +101,16 @@
                     <input type="number" id="pcKmTarget" placeholder="Ej: 50" step="0.1">
                 </div>
             </div>
-            <button onclick="agregarPuntoPorKilometro()">Ubicar Automáticamente en el Mapa</button>
+            <button onclick="agregarPuntoPorKilometro()">Ubicar en el Mapa con Nombre</button>
         </div>
 
-        <!-- EDICIÓN DE PASOS Y ESTADO POR CORREDOR -->
+        <!-- EDICIÓN POR DORSAL O LISTA -->
         <div class="panel">
             <h3>Edición de Tiempos y Estado</h3>
             <div class="form-group">
-                <label>Seleccionar Dorsal / Corredor:</label>
-                <select id="selectDorsal" onchange="cargarDatosCorredorForm()"></select>
+                <label>Ingrese o Seleccione Dorsal:</label>
+                <input type="text" id="inputDorsalBusqueda" list="listaCorredores" placeholder="Escribe el dorsal (ej. 101) o selecciona..." oninput="cargarDatosCorredorPorInput()">
+                <datalist id="listaCorredores"></datalist>
             </div>
             <div class="form-row">
                 <div>
@@ -198,7 +199,6 @@
             maxZoom: 18
         }).addTo(map);
 
-        // Lector directo de XML del archivo GPX para extraer coordenadas y calcular distancias exactas
         document.getElementById('gpxFileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -206,7 +206,6 @@
             reader.onload = function(evt) {
                 const gpxText = evt.target.result;
                 
-                // 1. Dibujar traza en el mapa con Leaflet-GPX
                 if (gpxLayer) map.removeLayer(gpxLayer);
                 gpxLayer = new L.GPX(gpxText, {
                     async: true,
@@ -215,7 +214,6 @@
                     map.fitBounds(e.target.getBounds());
                 }).addTo(map);
 
-                // 2. Parsear XML directamente para extraer los puntos <trkpt>
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(gpxText, "text/xml");
                 const trkpts = xmlDoc.getElementsByTagName("trkpt");
@@ -230,7 +228,7 @@
                     const currentLatLng = L.latLng(lat, lon);
 
                     if (i > 0 && prevLatLng) {
-                        distanciaAcumulada += prevLatLng.distanceTo(currentLatLng); // metros
+                        distanciaAcumulada += prevLatLng.distanceTo(currentLatLng);
                     }
                     prevLatLng = currentLatLng;
 
@@ -239,12 +237,13 @@
                         distanciaKm: distanciaAcumulada / 1000
                     });
                 }
-                alert(`¡Archivo GPX analizado con éxito! Se cargaron ${puntosCargadosGPX.length} puntos de ruta (${(puntosCargadosGPX[puntosCargadosGPX.length-1].distanciaKm).toFixed(2)} km totales).`);
+                alert(`¡GPX analizado! Total: ${(puntosCargadosGPX[puntosCargadosGPX.length-1].distanciaKm).toFixed(2)} km.`);
             };
             reader.readAsText(file);
         });
     }
 
+    // Agregar punto con nombre visible fijo en el mapa
     function agregarPuntoPorKilometro() {
         const nombre = document.getElementById('pcNombreKm').value;
         const kmTarget = parseFloat(document.getElementById('pcKmTarget').value);
@@ -259,7 +258,6 @@
             return;
         }
 
-        // Encontrar el punto más cercano al kilómetro solicitado
         let puntoMasCercano = puntosCargadosGPX[0];
         let menorDiferencia = Math.abs(puntoMasCercano.distanciaKm - kmTarget);
 
@@ -271,16 +269,18 @@
             }
         }
 
-        // Dibujar marcador en el mapa
+        // Crear marcador con nombre visible permanentemente en el mapa
         L.circleMarker(puntoMasCercano.latlng, {
             radius: 8,
             fillColor: "#e74c3c",
             color: "#fff",
             weight: 2,
             fillOpacity: 1
-        }).addTo(map).bindPopup(`<b>${nombre}</b><br>Km objetivo: ${kmTarget} km<br>Ubicación real: ~${puntoMasCercano.distanciaKm.toFixed(2)} km`);
+        }).addTo(map)
+          .bindTooltip(`<b>${nombre}</b> (Km ${kmTarget})`, {permanent: true, direction: 'top', className: 'my-tooltip'})
+          .openTooltip();
 
-        alert(`¡Punto "${nombre}" localizado con éxito en el Km ${puntoMasCercano.distanciaKm.toFixed(2)}!`);
+        alert(`¡Punto "${nombre}" fijado en el Km ${puntoMasCercano.distanciaKm.toFixed(2)} del mapa!`);
         document.getElementById('pcNombreKm').value = "";
         document.getElementById('pcKmTarget').value = "";
     }
@@ -290,43 +290,53 @@
             .then(res => res.json())
             .then(data => {
                 datosEvento = data;
-                poblarSelectDorsales();
+                poblarDatalistCorredores();
                 renderizarTablaAdmin();
             })
             .catch(err => console.error("Error al cargar data.json", err));
     }
 
-    function poblarSelectDorsales() {
-        const select = document.getElementById('selectDorsal');
-        select.innerHTML = '<option value="">-- Seleccione un Corredor --</option>';
+    // Poblar lista inteligente de dorsales para autocompletar o seleccionar
+    function poblarDatalistCorredores() {
+        const datalist = document.getElementById('listaCorredores');
+        datalist.innerHTML = '';
         datosEvento.corredores.forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.dorsal;
-            opt.textContent = `#${c.dorsal} - ${c.nombre}`;
-            select.appendChild(opt);
+            opt.textContent = `${c.nombre} (Dorsal #${c.dorsal})`;
+            datalist.appendChild(opt);
         });
     }
 
-    function cargarDatosCorredorForm() {
-        const dorsalSel = document.getElementById('selectDorsal').value;
-        const corredor = datosEvento.corredores.find(c => c.dorsal.toString() === dorsalSel);
-        if (!corredor) return;
-
-        document.getElementById('editLargada').value = corredor.largada || '';
-        document.getElementById('editKm50').value = corredor.km50 || '';
-        document.getElementById('editKm81').value = corredor.km81 || '';
-        document.getElementById('editMeta').value = corredor.meta || '';
-        document.getElementById('editEstado').value = corredor.estado || 'En Carrera';
+    // Buscar y rellenar formulario al escribir el dorsal o seleccionarlo
+    function cargarDatosCorredorPorInput() {
+        const valInput = document.getElementById('inputDorsalBusqueda').value.trim();
+        const corredor = datosEvento.corredores.find(c => c.dorsal.toString() === valInput);
+        
+        if (corredor) {
+            document.getElementById('editLargada').value = corredor.largada || '';
+            document.getElementById('editKm50').value = corredor.km50 || '';
+            document.getElementById('editKm81').value = corredor.km81 || '';
+            document.getElementById('editMeta').value = corredor.meta || '';
+            document.getElementById('editEstado').value = corredor.estado || 'En Carrera';
+            document.getElementById('msgFeedback').innerText = `Editando al atleta: ${corredor.nombre}`;
+        } else {
+            document.getElementById('editLargada').value = '';
+            document.getElementById('editKm50').value = '';
+            document.getElementById('editKm81').value = '';
+            document.getElementById('editMeta').value = '';
+            document.getElementById('msgFeedback').innerText = '';
+        }
     }
 
     function guardarCambiosCorredor() {
-        const dorsalSel = document.getElementById('selectDorsal').value;
-        if (!dorsalSel) {
-            alert("Seleccione un corredor primero.");
+        const valInput = document.getElementById('inputDorsalBusqueda').value.trim();
+        if (!valInput) {
+            alert("Ingrese o seleccione un número de dorsal.");
             return;
         }
 
-        let corredor = datosEvento.corredores.find(c => c.dorsal.toString() === dorsalSel);
+        let corredor = datosEvento.corredores.find(c => c.dorsal.toString() === valInput);
         if (corredor) {
             corredor.largada = document.getElementById('editLargada').value || "-";
             corredor.km50 = document.getElementById('editKm50').value || "-";
@@ -334,8 +344,10 @@
             corredor.meta = document.getElementById('editMeta').value || "-";
             corredor.estado = document.getElementById('editEstado').value;
 
-            document.getElementById('msgFeedback').innerText = `¡Datos del dorsal #${corredor.dorsal} actualizados localmente!`;
+            document.getElementById('msgFeedback').innerText = `¡Datos del dorsal #${corredor.dorsal} actualizados con éxito!`;
             renderizarTablaAdmin();
+        } else {
+            alert("No se encontró ningún corredor con ese número de dorsal.");
         }
     }
 
