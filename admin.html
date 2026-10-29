@@ -79,7 +79,7 @@
     <h1>PANEL DE CONTROL TÉCNICO - LA GRAN TRAVESÍA 100K</h1>
     
     <div class="grid">
-        <!-- MAPA, GPX Y PUNTOS CON MEMORIA LOCAL -->
+        <!-- MAPA Y PUNTOS CON MEMORIA LOCAL -->
         <div class="panel">
             <h3>Visualización de Ruta &amp; Controles</h3>
             <div id="map"></div>
@@ -105,7 +105,7 @@
             <button onclick="agregarPuntoPorKilometro()">Ubicar en el Mapa con Nombre</button>
         </div>
 
-        <!-- SECCIÓN DE EDICIÓN RÁPIDA DE PARTICIPANTES -->
+        <!-- EDICIÓN RÁPIDA -->
         <div class="panel">
             <h3>Edición Rápida de Atleta</h3>
             <div class="form-group">
@@ -122,18 +122,18 @@
                     <label>Estado:</label>
                     <select id="editEstado">
                         <option value="En Carrera">En Carrera</option>
-                        <option value="FIN">FIN (Finalizado)</option>
+                        <option value="FINALIZADO">FINALIZADO</option>
                         <option value="DNF">DNF (Abandono)</option>
                     </select>
                 </div>
             </div>
-            <p style="font-size: 11px; color: #f39c12; margin: 8px 0 4px 0;">Nota: Para modificar los tiempos de paso, edítalos directamente en tu Google Sheet vinculado.</p>
+            <p style="font-size: 11px; color: #f39c12; margin: 8px 0 4px 0;">Nota: Los tiempos de paso se gestionan directamente desde tu Google Sheet.</p>
             <button onclick="guardarCambiosCorredor()">Actualizar Estado Local</button>
             <p id="msgFeedback" style="font-size: 11px; text-align: center; margin-top: 8px; color: #27ae60;"></p>
         </div>
     </div>
 
-    <!-- TABLA GENERAL DE MONITOREO DINÁMICA -->
+    <!-- TABLA GENERAL ADMIN -->
     <div class="panel">
         <h3>Listado General de Competidores</h3>
         <div style="overflow-x: auto;">
@@ -153,13 +153,12 @@
 
 <script>
     const CLAVE_AUTORIZADA = "101082";
-    const TIEMPO_SESION_MINUTOS = 5; // Margen de 5 minutos antes de volver a pedir clave
+    const TIEMPO_SESION_MINUTOS = 5;
 
     window.onload = function() {
         const ultimoAcceso = localStorage.getItem("adminUltimoAcceso");
         const ahora = new Date().getTime();
 
-        // Comprobar si la sesión sigue vigente dentro de los 5 minutos
         if (ultimoAcceso && (ahora - parseInt(ultimoAcceso)) < (TIEMPO_SESION_MINUTOS * 60 * 1000)) {
             concederAcceso();
         }
@@ -201,21 +200,19 @@
             maxZoom: 18
         }).addTo(map);
 
-        // Comprobar si ya hay un GPX guardado en la memoria local del navegador
         const gpxGuardado = localStorage.getItem("gpxRutaGuardada");
         if (gpxGuardado) {
             procesarTextoGPX(gpxGuardado);
             document.getElementById('gpxLabel').innerText = "1. Archivo GPX de Ruta (Cargado en memoria):";
         }
 
-        // Capturar archivo subido por el usuario
         document.getElementById('gpxFileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
                 const gpxText = evt.target.result;
-                localStorage.setItem("gpxRutaGuardada", gpxText); // Guardar permanentemente en el navegador
+                localStorage.setItem("gpxRutaGuardada", gpxText);
                 procesarTextoGPX(gpxText);
                 document.getElementById('gpxLabel').innerText = "1. Archivo GPX de Ruta (Cargado en memoria):";
             };
@@ -256,7 +253,6 @@
                 distanciaKm: distanciaAcumulada / 1000
             });
         }
-        console.log(`GPX procesado desde memoria: ${puntosCargadosGPX.length} puntos.`);
     }
 
     function agregarPuntoPorKilometro() {
@@ -300,7 +296,6 @@
     }
 
     function cargarDatosJSON() {
-        // Actualizar marca de tiempo de actividad en sesión para mantener el lapso activo
         localStorage.setItem("adminUltimoAcceso", new Date().getTime().toString());
 
         fetch('data.json?t=' + new Date().getTime())
@@ -359,22 +354,22 @@
 
     function construirTablaAdmin(corredores) {
         const primerCorredor = corredores[0];
-        const ignorar = ["dorsal", "nombre", "categoria", "estado"];
+        const ignorar = ["dorsal", "nombre", "categoria", "distancia", "sexo", "estado", "TIEMPO DE CARRERA"];
         let columnasDinamicas = Object.keys(primerCorredor).filter(k => !ignorar.includes(k));
 
         const trHead = document.getElementById('adminTableHeaders');
         let headHTML = `
             <th>Dorsal</th>
             <th>Atleta</th>
+            <th>Distancia</th>
             <th>Categoría</th>
+            <th>Sexo</th>
             <th>Estado</th>
             <th style="color: #f39c12;">Tiempo Carrera</th>
         `;
         
         columnasDinamicas.forEach(col => {
-            if (col.toUpperCase() !== "TIEMPO DE CARRERA") {
-                headHTML += `<th>${col}</th>`;
-            }
+            headHTML += `<th>${col}</th>`;
         });
         trHead.innerHTML = headHTML;
 
@@ -383,24 +378,25 @@
 
         corredores.forEach(c => {
             let badgeClass = "badge-carrera";
-            if (c.estado === "FIN") badgeClass = "badge-fin";
-            if (c.estado === "DNF") badgeClass = "badge-dnf";
+            let estadoUpper = (c.estado || "").toUpperCase();
+            if (estadoUpper.includes("FIN") || estadoUpper.includes("FINALIZADO")) badgeClass = "badge-fin";
+            else if (estadoUpper.includes("DNF")) badgeClass = "badge-dnf";
 
-            let tiempoCarreraVal = c["TIEMPO DE CARRERA"] || c["tiempo de carrera"] || '-';
+            let tiempoCarreraVal = c["TIEMPO DE CARRERA"] || '-';
 
             let trHTML = `
                 <td><strong>#${c.dorsal}</strong></td>
                 <td>${c.nombre}</td>
-                <td>${c.categoria}</td>
+                <td>${c.distancia || '100K'}</td>
+                <td>${c.categoria || 'INDIVIDUAL'}</td>
+                <td>${c.sexo || 'M'}</td>
                 <td><span class="badge ${badgeClass}">${c.estado}</span></td>
                 <td style="color: #f39c12; font-weight: bold;">${tiempoCarreraVal}</td>
             `;
 
             columnasDinamicas.forEach(col => {
-                if (col.toUpperCase() !== "TIEMPO DE CARRERA") {
-                    let valor = c[col] || '-';
-                    trHTML += `<td>${valor}</td>`;
-                }
+                let valor = c[col] || '-';
+                trHTML += `<td>${valor}</td>`;
             });
 
             const tr = document.createElement('tr');
