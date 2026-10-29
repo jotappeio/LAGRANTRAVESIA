@@ -188,7 +188,7 @@
 
     let map, gpxLayer;
     let datosEvento = { evento: "", actualizado: "", corredores: [] };
-    let puntosCargadosGPX = []; // Guardará las coordenadas del track para análisis de distancia
+    let puntosCargadosGPX = [];
 
     function initMapa() {
         if (map) return;
@@ -198,48 +198,53 @@
             maxZoom: 18
         }).addTo(map);
 
-        // Cargar archivo GPX y extraer sus puntos para análisis de distancia
+        // Lector directo de XML del archivo GPX para extraer coordenadas y calcular distancias exactas
         document.getElementById('gpxFileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
                 const gpxText = evt.target.result;
-                if (gpxLayer) map.removeLayer(gpxLayer);
                 
+                // 1. Dibujar traza en el mapa con Leaflet-GPX
+                if (gpxLayer) map.removeLayer(gpxLayer);
                 gpxLayer = new L.GPX(gpxText, {
                     async: true,
                     polyline_options: { color: '#f39c12', weight: 4, opacity: 0.8 }
                 }).on('loaded', function(e) {
                     map.fitBounds(e.target.getBounds());
-                    
-                    // Extraer los puntos del track GPX cargado para calcular distancias
-                    puntosCargadosGPX = [];
-                    const layers = e.target.getLayers();
-                    layers.forEach(layer => {
-                        if (layer instanceof L.Polyline) {
-                            const latlngs = layer.getLatLngs();
-                            let distanciaAcumulada = 0;
-                            
-                            for (let i = 0; i < latlngs.length; i++) {
-                                if (i > 0) {
-                                    distanciaAcumulada += latlngs[i-1].distanceTo(latlngs[i]); // en metros
-                                }
-                                puntosCargadosGPX.push({
-                                    latlng: latlngs[i],
-                                    distanciaKm: distanciaAcumulada / 1000
-                                });
-                            }
-                        }
-                    });
-                    console.log(`GPX analizado: ${puntosCargadosGPX.length} puntos de ruta registrados.`);
                 }).addTo(map);
+
+                // 2. Parsear XML directamente para extraer los puntos <trkpt>
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(gpxText, "text/xml");
+                const trkpts = xmlDoc.getElementsByTagName("trkpt");
+                
+                puntosCargadosGPX = [];
+                let distanciaAcumulada = 0;
+                let prevLatLng = null;
+
+                for (let i = 0; i < trkpts.length; i++) {
+                    const lat = parseFloat(trkpts[i].getAttribute("lat"));
+                    const lon = parseFloat(trkpts[i].getAttribute("lon"));
+                    const currentLatLng = L.latLng(lat, lon);
+
+                    if (i > 0 && prevLatLng) {
+                        distanciaAcumulada += prevLatLng.distanceTo(currentLatLng); // metros
+                    }
+                    prevLatLng = currentLatLng;
+
+                    puntosCargadosGPX.push({
+                        latlng: currentLatLng,
+                        distanciaKm: distanciaAcumulada / 1000
+                    });
+                }
+                alert(`¡Archivo GPX analizado con éxito! Se cargaron ${puntosCargadosGPX.length} puntos de ruta (${(puntosCargadosGPX[puntosCargadosGPX.length-1].distanciaKm).toFixed(2)} km totales).`);
             };
             reader.readAsText(file);
         });
     }
 
-    // Identificar automáticamente la coordenada en base al kilómetro ingresado
     function agregarPuntoPorKilometro() {
         const nombre = document.getElementById('pcNombreKm').value;
         const kmTarget = parseFloat(document.getElementById('pcKmTarget').value);
@@ -250,11 +255,11 @@
         }
 
         if (puntosCargadosGPX.length === 0) {
-            alert("Primero debes cargar y seleccionar un archivo GPX válido en el panel.");
+            alert("Primero debes cargar un archivo GPX válido en el panel.");
             return;
         }
 
-        // Buscar el punto del GPX cuya distancia acumulada esté más cerca del kilómetro buscado
+        // Encontrar el punto más cercano al kilómetro solicitado
         let puntoMasCercano = puntosCargadosGPX[0];
         let menorDiferencia = Math.abs(puntoMasCercano.distanciaKm - kmTarget);
 
@@ -266,16 +271,16 @@
             }
         }
 
-        // Dibujar marcador inteligente en el mapa
-        L.circleMarker([puntoMasCercano.latlng.lat, puntoMasCercano.latlng.lng], {
+        // Dibujar marcador en el mapa
+        L.circleMarker(puntoMasCercano.latlng, {
             radius: 8,
             fillColor: "#e74c3c",
             color: "#fff",
             weight: 2,
             fillOpacity: 1
-        }).addTo(map).bindPopup(`<b>${nombre}</b><br>Km objetivo: ${kmTarget} km<br>Ubicación real en GPX: ~${puntoMasCercano.distanciaKm.toFixed(2)} km`);
+        }).addTo(map).bindPopup(`<b>${nombre}</b><br>Km objetivo: ${kmTarget} km<br>Ubicación real: ~${puntoMasCercano.distanciaKm.toFixed(2)} km`);
 
-        alert(`¡Punto "${nombre}" localizado con éxito en el Km ${puntoMasCercano.distanciaKm.toFixed(2)} del GPX!`);
+        alert(`¡Punto "${nombre}" localizado con éxito en el Km ${puntoMasCercano.distanciaKm.toFixed(2)}!`);
         document.getElementById('pcNombreKm').value = "";
         document.getElementById('pcKmTarget').value = "";
     }
