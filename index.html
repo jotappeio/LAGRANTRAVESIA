@@ -3,301 +3,500 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Gran Travesía 100K - Latitud Sur Expedition</title>
+    <title>Panel Técnico — Latitud Sur Expedition</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
-            --lse-dark: #070a13;
-            --lse-card: #0e1526;
-            --lse-card-hover: #141d33;
-            --lse-orange: #d97706; /* Naranja expedición */
-            --lse-gold: #f59e0b;
+            --lse-dark: #07090e;
+            --lse-card: #0f141f;
+            --lse-border: #1f293d;
+            --lse-orange: #f97316;
+            --lse-gold: #fbbf24;
             --lse-text: #f3f4f6;
             --lse-muted: #9ca3af;
-            --lse-border: #1f2937;
         }
 
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--lse-dark);
             color: var(--lse-text);
             margin: 0;
-            padding: 0;
-        }
-
-        /* Barra superior estilo LSE */
-        header {
-            background-color: var(--lse-card);
-            border-bottom: 1px solid var(--lse-border);
-            padding: 20px 0;
-            text-align: center;
-        }
-        header h4 {
-            color: var(--lse-orange);
-            font-size: 11px;
-            letter-spacing: 4px;
-            margin: 0 0 6px 0;
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-        header h1 {
-            color: #ffffff;
-            font-size: 24px;
-            margin: 0;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-
-        .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
-
-        /* Mapa */
-        .map-section {
-            background-color: var(--lse-card);
-            border: 1px solid var(--lse-border);
-            border-radius: 8px;
             padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-        }
-        .map-section h3 {
-            color: var(--lse-gold);
-            font-size: 14px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-top: 0;
-            margin-bottom: 15px;
-            border-left: 3px solid var(--lse-orange);
-            padding-left: 10px;
-        }
-        #map {
-            height: 420px;
-            border-radius: 6px;
-            border: 1px solid var(--lse-border);
         }
 
-        /* Buscador */
-        .search-box {
-            background-color: var(--lse-card);
-            border: 1px solid var(--lse-border);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
+        .container { max-width: 1300px; margin: 0 auto; display: none; }
+        h1, h3 { color: var(--lse-gold); text-align: center; }
+        h1 { font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
         }
-        .search-box input {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 15px;
-            background-color: var(--lse-dark);
+        @media (max-width: 950px) { .grid { grid-template-columns: 1fr; } }
+        
+        .panel {
+            background-color: var(--lse-card);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
             border: 1px solid var(--lse-border);
-            color: #fff;
-            border-radius: 6px;
-            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+        #map { height: 280px; border-radius: 6px; border: 1px solid var(--lse-border); margin-bottom: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--lse-border); }
+        th { background-color: #0b101c; color: var(--lse-muted); text-transform: uppercase; font-size: 11px; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .form-group { margin-bottom: 10px; }
+        label { display: block; font-size: 11px; color: var(--lse-muted); margin-bottom: 3px; }
+        
+        input, select {
+            width: 100%; padding: 8px; font-size: 13px;
+            border-radius: 6px; border: 1px solid var(--lse-border);
+            background-color: var(--lse-dark); color: white; box-sizing: border-box;
             outline: none;
-            transition: border-color 0.2s;
         }
-        .search-box input:focus {
-            border-color: var(--lse-orange);
-        }
+        input:focus, select:focus { border-color: var(--lse-orange); }
 
-        /* Tabla Estilo Profesional LSE */
-        .table-container {
-            background-color: var(--lse-card);
+        button {
+            background-color: var(--lse-orange); color: #fff; border: none;
+            padding: 10px 15px; font-weight: 700; border-radius: 6px; cursor: pointer; width: 100%;
+            text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;
+        }
+        button:hover { background-color: #ea580c; }
+        .btn-danger { background-color: #dc2626; color: white; padding: 4px 8px; font-size: 11px; width: auto; }
+        .btn-danger:hover { background-color: #b91c1c; }
+        
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--lse-dark); display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .login-box {
+            background-color: var(--lse-card); padding: 30px; border-radius: 8px; width: 300px; text-align: center;
             border: 1px solid var(--lse-border);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-        th, td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--lse-border);
-            font-size: 13px;
-        }
-        th {
-            background-color: #0b1120;
+        
+        .section-title {
+            background-color: #131b2e;
             color: var(--lse-gold);
-            text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 1px;
-        }
-        tr:hover { background-color: var(--lse-card-hover); }
-
-        /* Badges de Estado */
-        .badge {
-            padding: 5px 10px;
-            border-radius: 4px;
+            padding: 10px 12px;
+            font-size: 13px;
             font-weight: 700;
-            font-size: 10px;
-            letter-spacing: 0.5px;
             text-transform: uppercase;
-        }
-        .badge-fin { background-color: #059669; color: #fff; }
-        .badge-carrera { background-color: #0284c7; color: #fff; }
-        .badge-dnf { background-color: #dc2626; color: #fff; }
-
-        .tiempo-carrera { color: var(--lse-gold); font-weight: 700; font-family: monospace; font-size: 14px; }
-        .update-bar {
+            border-bottom: 1px solid var(--lse-border);
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            font-size: 12px;
-            color: var(--lse-muted);
         }
+
+        .badge { padding: 3px 6px; border-radius: 4px; font-weight: 700; font-size: 11px; }
+        .badge-fin { background-color: #059669; color: white; }
+        .badge-carrera { background-color: #0284c7; color: white; }
+        .badge-dnf { background-color: #dc2626; color: white; }
+        .pos-badge { background-color: var(--lse-orange); color: white; font-weight: 800; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+        .my-tooltip { background: var(--lse-card); color: var(--lse-gold); border: 1px solid var(--lse-orange); font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-<header>
-    <h4>Latitud Sur Expedition</h4>
-    <h1>La Gran Travesía 100K</h1>
-</header>
+<!-- INGRESO CON CONTRASEÑA -->
+<div id="loginOverlay">
+    <div class="login-box">
+        <span style="color: var(--lse-orange); font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">Latitud Sur Expedition</span>
+        <h3 style="margin: 5px 0 15px 0;">Panel de Operaciones</h3>
+        <input type="password" id="accessPassword" placeholder="Contraseña..." style="margin-bottom: 15px; text-align: center;" onkeypress="handleKeyPress(event)">
+        <button onclick="verificarPassword()">Acceder</button>
+    </div>
+</div>
 
-<div class="container">
+<div class="container" id="mainContainer">
+    <h1>Panel de Control Técnico — Eventos LSE</h1>
     
-    <div class="map-section">
-        <h3>Ruta Oficial &amp; Puntos de Control</h3>
-        <div id="map"></div>
-    </div>
+    <div class="grid">
+        <!-- CONFIGURACIÓN DE METADATOS Y LOGOS -->
+        <div class="panel">
+            <h3>Configuración del Evento &amp; Marca</h3>
+            <div class="form-group">
+                <label>Nombre del Evento:</label>
+                <input type="text" id="confNombreEvento" placeholder="Ej: La Gran Travesía 100K">
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Fecha:</label>
+                    <input type="text" id="confFecha" placeholder="Ej: 28-30 Octubre 2026">
+                </div>
+                <div>
+                    <label>Ubicación:</label>
+                    <input type="text" id="confUbicacion" placeholder="Ej: Cajón del Maipo, Chile">
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Logo Cabecera (Evento):</label>
+                    <input type="file" id="logoCabeceraInput" accept="image/*" style="font-size: 11px; padding: 4px;">
+                </div>
+                <div>
+                    <label>Logos Auspiciadores (Pie):</label>
+                    <input type="file" id="logoPieInput" accept="image/*" style="font-size: 11px; padding: 4px;">
+                </div>
+            </div>
+            <button onclick="guardarConfiguracionEvento()">Guardar Configuración General</button>
+        </div>
 
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Buscar atleta por nombre o número de dorsal..." onkeyup="filtrarTabla()">
-    </div>
+        <!-- MAPA Y GESTIÓN DE PUNTOS -->
+        <div class="panel">
+            <h3>Visualización de Ruta &amp; Controles</h3>
+            <div id="map"></div>
+            
+            <div class="form-group" id="gpxLoadContainer" style="margin-top: 5px;">
+                <label id="gpxLabel">Archivo GPX de Ruta:</label>
+                <input type="file" id="gpxFileInput" accept=".gpx" style="font-size: 11px; padding: 3px;">
+            </div>
 
-    <div class="update-bar">
-        <span>Resultados oficiales en tiempo real</span>
-        <span id="updateInfo">Sincronizando...</span>
-    </div>
-
-    <div class="table-container">
-        <div style="overflow-x: auto;">
-            <table id="tablaCorredores">
-                <thead>
-                    <tr id="tableHeaders"></tr>
-                </thead>
-                <tbody id="cuerpoTabla"></tbody>
-            </table>
+            <div class="form-row" style="margin-top: 8px;">
+                <div>
+                    <label>Nombre del Control:</label>
+                    <input type="text" id="pcNombreKm" placeholder="Ej: Abastecimiento Km 50">
+                </div>
+                <div>
+                    <label>Kilómetro:</label>
+                    <input type="number" id="pcKmTarget" placeholder="Ej: 50" step="0.1">
+                </div>
+            </div>
+            <button onclick="agregarPuntoPorKilometro()">Fijar Punto en Mapa</button>
         </div>
     </div>
 
+    <!-- EDICIÓN RÁPIDA DE ATLETAS -->
+    <div class="panel">
+        <h3>Edición Rápida de Atleta</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Seleccionar Dorsal:</label>
+                <input type="text" id="inputDorsalBusqueda" list="listaCorredores" placeholder="Escribe el dorsal..." oninput="cargarDatosCorredorPorInput()">
+                <datalist id="listaCorredores"></datalist>
+            </div>
+            <div class="form-group">
+                <label>Nombre del Atleta:</label>
+                <input type="text" id="editNombre" readonly style="background-color: var(--lse-dark); color: var(--lse-muted);">
+            </div>
+            <div class="form-group">
+                <label>Estado:</label>
+                <select id="editEstado">
+                    <option value="En Carrera">En Carrera</option>
+                    <option value="FINALIZADO">FINALIZADO</option>
+                    <option value="DNF">DNF (Abandono)</option>
+                </select>
+            </div>
+        </div>
+        <button onclick="guardarCambiosCorredor()" style="width: auto; padding: 8px 20px;">Actualizar Estado Local</button>
+        <span id="msgFeedback" style="font-size: 11px; margin-left: 10px; color: #059669;"></span>
+    </div>
+
+    <!-- TABLA GENERAL ADMIN -->
+    <div class="panel">
+        <h3>Listado General por Clasificación</h3>
+        <div id="contenedorSeccionesAdmin" style="margin-top: 15px;"></div>
+    </div>
 </div>
 
-<!-- Leaflet JS y Plugin GPX -->
+<!-- Leaflet JS y Plugins GPX -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
 
 <script>
-    const map = L.map('map').setView([-33.35, -70.65], 11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-        maxZoom: 18
-    }).addTo(map);
+    const CLAVE_AUTORIZADA = "101082";
+    const TIEMPO_SESION_MINUTOS = 5;
 
-    try {
-        new L.GPX('ruta.gpx', { 
-            async: true, 
-            polyline_options: { color: '#d97706', weight: 4, opacity: 0.9 } 
-        }).on('loaded', function(e) {
-            map.fitBounds(e.target.getBounds());
-        }).addTo(map);
-    } catch(e) {
-        console.log("Carga de GPX pendiente en el repositorio.");
-    }
+    window.onload = function() {
+        const ultimoAcceso = localStorage.getItem("adminUltimoAcceso");
+        const ahora = new Date().getTime();
 
-    let todosLosCorredores = [];
+        if (ultimoAcceso && (ahora - parseInt(ultimoAcceso)) < (TIEMPO_SESION_MINUTOS * 60 * 1000)) {
+            concederAcceso();
+        }
+        cargarConfiguracionGuardadaEnForm();
+    };
 
-    function cargarDatos() {
-        fetch('data.json?t=' + new Date().getTime())
-            .then(response => response.json())
-            .then(data => {
-                todosLosCorredores = data.corredores;
-                document.getElementById('updateInfo').innerText = "Última actualización: " + data.actualizado;
-                
-                if (todosLosCorredores.length > 0) {
-                    construirTabla(todosLosCorredores);
-                }
-            })
-            .catch(error => console.error('Error al cargar los datos:', error));
-    }
-
-    function construirTabla(corredores) {
-        const primerCorredor = corredores[0];
-        const ignorar = ["dorsal", "nombre", "categoria", "distancia", "sexo", "estado", "TIEMPO DE CARRERA"];
-        let columnasDinamicas = Object.keys(primerCorredor).filter(k => !ignorar.includes(k));
-
-        const trHead = document.getElementById('tableHeaders');
-        let headHTML = `
-            <th>Dorsal</th>
-            <th>Atleta</th>
-            <th>Distancia</th>
-            <th>Categoría</th>
-            <th>Sexo</th>
-            <th>Estado</th>
-            <th style="color: var(--lse-gold);">Tiempo Carrera</th>
-        `;
-        
-        columnasDinamicas.forEach(col => {
-            headHTML += `<th>${col}</th>`;
-        });
-        trHead.innerHTML = headHTML;
-
-        mostrarFiltrados(corredores, columnasDinamicas);
-    }
-
-    function mostrarFiltrados(corredores, columnasDinamicas) {
-        const tbody = document.getElementById('cuerpoTabla');
-        tbody.innerHTML = "";
-
-        corredores.forEach(c => {
-            let badgeClass = "badge-carrera";
-            let estadoUpper = (c.estado || "").toUpperCase();
-            if (estadoUpper.includes("FIN") || estadoUpper.includes("FINALIZADO")) badgeClass = "badge-fin";
-            else if (estadoUpper.includes("DNF")) badgeClass = "badge-dnf";
-
-            let tiempoCarreraVal = c["TIEMPO DE CARRERA"] || '-';
-
-            let trHTML = `
-                <td><strong>#${c.dorsal}</strong></td>
-                <td>${c.nombre}</td>
-                <td>${c.distancia || '100K'}</td>
-                <td>${c.categoria || 'INDIVIDUAL'}</td>
-                <td>${c.sexo || 'M'}</td>
-                <td><span class="badge ${badgeClass}">${c.estado}</span></td>
-                <td class="tiempo-carrera">${tiempoCarreraVal}</td>
-            `;
-
-            columnasDinamicas.forEach(col => {
-                let valor = c[col] || '-';
-                trHTML += `<td>${valor}</td>`;
-            });
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = trHTML;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function filtrarTabla() {
-        const filtro = document.getElementById('searchInput').value.toLowerCase();
-        const filtrados = todosLosCorredores.filter(c => {
-            return c.nombre.toLowerCase().includes(filtro) || c.dorsal.toString().includes(filtro);
-        });
-        
-        if (filtrados.length > 0) {
-            const ignorar = ["dorsal", "nombre", "categoria", "distancia", "sexo", "estado", "TIEMPO DE CARRERA"];
-            const columnasDinamicas = Object.keys(filtrados[0]).filter(k => !ignorar.includes(k));
-            mostrarFiltrados(filtrados, columnasDinamicas);
+    function verificarPassword() {
+        const pass = document.getElementById('accessPassword').value;
+        if (pass === CLAVE_AUTORIZADA) {
+            localStorage.setItem("adminUltimoAcceso", new Date().getTime().toString());
+            concederAcceso();
+        } else {
+            alert("Contraseña incorrecta.");
         }
     }
 
-    cargarDatos();
-    setInterval(cargarDatos, 15000);
+    function handleKeyPress(event) {
+        if (event.key === "Enter") verificarPassword();
+    }
+
+    function concederAcceso() {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainContainer').style.display = 'block';
+        initMapa();
+        cargarDatosJSON();
+        setInterval(cargarDatosJSON, 15000);
+    }
+
+    function cargarConfiguracionGuardadaEnForm() {
+        document.getElementById('confNombreEvento').value = localStorage.getItem("lse_evento_nombre") || "La Gran Travesía 100K";
+        document.getElementById('confFecha').value = localStorage.getItem("lse_evento_fecha") || "Octubre 2026";
+        document.getElementById('confUbicacion').value = localStorage.getItem("lse_evento_ubicacion") || "Chile";
+    }
+
+    function guardarConfiguracionEvento() {
+        localStorage.setItem("lse_evento_nombre", document.getElementById('confNombreEvento').value);
+        localStorage.setItem("lse_evento_fecha", document.getElementById('confFecha').value);
+        localStorage.setItem("lse_evento_ubicacion", document.getElementById('confUbicacion').value);
+
+        // Guardar imágenes en Base64
+        const fileCabecera = document.getElementById('logoCabeceraInput').files[0];
+        if (fileCabecera) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                localStorage.setItem("lse_logo_cabecera", e.target.result);
+            };
+            reader.readAsDataURL(fileCabecera);
+        }
+
+        const filePie = document.getElementById('logoPieInput').files[0];
+        if (filePie) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                localStorage.setItem("lse_logo_pie", e.target.result);
+            };
+            reader.readAsDataURL(filePie);
+        }
+
+        alert("¡Configuración general y marcas guardadas con éxito!");
+    }
+
+    let map, gpxLayer;
+    let datosEvento = { evento: "", actualizado: "", corredores: [] };
+    let puntosCargadosGPX = [];
+    let marcadoresPuestosControl = [];
+    let columnasDinamicasGlobales = [];
+
+    function initMapa() {
+        if (map) return;
+        map = L.map('map').setView([-33.35, -70.65], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+
+        const gpxGuardado = localStorage.getItem("gpxRutaGuardada");
+        if (gpxGuardado) {
+            procesarTextoGPX(gpxGuardado, false);
+            document.getElementById('gpxLabel').innerText = "Archivo GPX (Cargado en memoria):";
+        }
+
+        document.getElementById('gpxFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const gpxText = evt.target.result;
+                localStorage.setItem("gpxRutaGuardada", gpxText);
+                procesarTextoGPX(gpxText, true);
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    function procesarTextoGPX(gpxText, centrarMapa) {
+        if (gpxLayer) map.removeLayer(gpxLayer);
+        gpxLayer = new L.GPX(gpxText, {
+            async: true,
+            polyline_options: { color: '#f97316', weight: 4, opacity: 0.9 }
+        }).on('loaded', function(e) {
+            if (centrarMapa) map.fitBounds(e.target.getBounds());
+        }).addTo(map);
+
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(gpxText, "text/xml");
+        const trkpts = xmlDoc.getElementsByTagName("trkpt");
+        puntosCargadosGPX = [];
+        let distanciaAcumulada = 0;
+        let prevLatLng = null;
+
+        for (let i = 0; i < trkpts.length; i++) {
+            const lat = parseFloat(trkpts[i].getAttribute("lat"));
+            const lon = parseFloat(trkpts[i].getAttribute("lon"));
+            const currentLatLng = L.latLng(lat, lon);
+            if (i > 0 && prevLatLng) distanciaAcumulada += prevLatLng.distanceTo(currentLatLng);
+            prevLatLng = currentLatLng;
+            puntosCargadosGPX.push({ latlng: currentLatLng, distanciaKm: distanciaAcumulada / 1000 });
+        }
+    }
+
+    function agregarPuntoPorKilometro() {
+        const nombre = document.getElementById('pcNombreKm').value.trim();
+        const kmTarget = parseFloat(document.getElementById('pcKmTarget').value);
+        if (!nombre || isNaN(kmTarget) || puntosCargadosGPX.length === 0) {
+            alert("Verifique los datos o cargue un archivo GPX.");
+            return;
+        }
+
+        let puntoMasCercano = puntosCargadosGPX[0];
+        let menorDiferencia = Math.abs(puntoMasCercano.distanciaKm - kmTarget);
+        for (let i = 1; i < puntosCargadosGPX.length; i++) {
+            let diff = Math.abs(puntosCargadosGPX[i].distanciaKm - kmTarget);
+            if (diff < menorDiferencia) { menorDiferencia = diff; puntoMasCercano = puntosCargadosGPX[i]; }
+        }
+
+        L.circleMarker(puntoMasCercano.latlng, { radius: 8, fillColor: "#f97316", color: "#fff", weight: 2, fillOpacity: 1 })
+         .addTo(map).bindTooltip(`<b>${nombre}</b> (Km ${kmTarget})`, {permanent: true, direction: 'top'});
+
+        document.getElementById('pcNombreKm').value = "";
+        document.getElementById('pcKmTarget').value = "";
+        alert(`¡Punto "${nombre}" fijado con éxito!`);
+    }
+
+    function cargarDatosJSON() {
+        localStorage.setItem("adminUltimoAcceso", new Date().getTime().toString());
+        fetch('data.json?t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(data => {
+                datosEvento = data;
+                poblarDatalistCorredores();
+                if (data.corredores.length > 0) {
+                    const primerCorredor = data.corredores[0];
+                    const ignorar = ["dorsal", "nombre", "categoria", "distancia", "sexo", "estado", "TIEMPO DE CARRERA"];
+                    columnasDinamicasGlobales = Object.keys(primerCorredor).filter(k => !ignorar.includes(k));
+                    construirSeccionesAdmin(data.corredores);
+                }
+            })
+            .catch(err => console.error("Error al cargar data.json", err));
+    }
+
+    function poblarDatalistCorredores() {
+        const datalist = document.getElementById('listaCorredores');
+        datalist.innerHTML = '';
+        datosEvento.corredores.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.dorsal;
+            opt.textContent = `${c.nombre} (#${c.dorsal})`;
+            datalist.appendChild(opt);
+        });
+    }
+
+    function cargarDatosCorredorPorInput() {
+        const valInput = document.getElementById('inputDorsalBusqueda').value.trim();
+        const corredor = datosEvento.corredores.find(c => c.dorsal.toString() === valInput);
+        if (corredor) {
+            document.getElementById('editNombre').value = corredor.nombre || '';
+            document.getElementById('editEstado').value = corredor.estado || 'En Carrera';
+        } else {
+            document.getElementById('editNombre').value = '';
+        }
+    }
+
+    function guardarCambiosCorredor() {
+        const valInput = document.getElementById('inputDorsalBusqueda').value.trim();
+        let corredor = datosEvento.corredores.find(c => c.dorsal.toString() === valInput);
+        if (corredor) {
+            corredor.estado = document.getElementById('editEstado').value;
+            document.getElementById('msgFeedback').innerText = `¡Actualizado!`;
+            construirSeccionesAdmin(datosEvento.corredores);
+        } else {
+            alert("Seleccione un dorsal válido.");
+        }
+    }
+
+    function convertirHoraASegundos(strHora) {
+        if (!strHora || strHora === "-") return 999999;
+        const partes = strHora.split(":");
+        if (partes.length < 2) return 999999;
+        return (parseInt(partes[0]) * 3600) + (parseInt(partes[1]) * 60) + (partes[2] ? parseInt(partes[2]) : 0);
+    }
+
+    function construirSeccionesAdmin(corredores) {
+        let copiaCorredores = [...corredores];
+        copiaCorredores.sort((a, b) => {
+            const estA = (a.estado || "").toUpperCase();
+            const estB = (b.estado || "").toUpperCase();
+            const esFinA = estA.includes("FIN") || estA.includes("FINALIZADO");
+            const esFinB = estB.includes("FIN") || estB.includes("FINALIZADO");
+            const esDnfA = estA.includes("DNF");
+            const esDnfB = estB.includes("DNF");
+
+            if (esFinA && !esFinB) return -1;
+            if (!esFinA && esFinB) return 1;
+            if (esFinA && esFinB) return convertirHoraASegundos(a["TIEMPO DE CARRERA"]) - convertirHoraASegundos(b["TIEMPO DE CARRERA"]);
+            if (esDnfA && !esDnfB) return 1;
+            if (!esDnfA && esDnfB) return -1;
+
+            let idxA = -1, idxB = -1;
+            columnasDinamicasGlobales.forEach((col, idx) => {
+                if (a[col] && a[col] !== "-") idxA = idx;
+                if (b[col] && b[col] !== "-") idxB = idx;
+            });
+            return idxB - idxA;
+        });
+
+        let grupos = {};
+        copiaCorredores.forEach(c => {
+            const dist = c.distancia || "100K";
+            const cat = c.categoria || "INDIVIDUAL";
+            const sexo = c.sexo || "M";
+            const clave = `${dist} — ${cat} (${sexo})`;
+            if (!grupos[clave]) grupos[clave] = [];
+            grupos[clave].push(c);
+        });
+
+        const contenedor = document.getElementById('contenedorSeccionesAdmin');
+        contenedor.innerHTML = "";
+
+        for (const [grupoNombre, listaAtletas] of Object.entries(grupos)) {
+            let tableHTML = `
+                <div style="margin-bottom: 20px; border: 1px solid var(--lse-border); border-radius: 6px; overflow: hidden;">
+                    <div class="section-title">
+                        <span>${grupoNombre}</span>
+                        <span style="font-size: 11px; color: var(--lse-muted);">${listaAtletas.length} Atletas</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pos</th>
+                                    <th>Dorsal</th>
+                                    <th>Atleta</th>
+                                    <th>Estado</th>
+                                    <th style="color: var(--lse-gold);">Tiempo Carrera</th>
+            `;
+            columnasDinamicasGlobales.forEach(col => tableHTML += `<th>${col}</th>`);
+            tableHTML += `</tr></thead><tbody>`;
+
+            listaAtletas.forEach((c, idx) => {
+                let badgeClass = "badge-carrera";
+                let estadoUpper = (c.estado || "").toUpperCase();
+                if (estadoUpper.includes("FIN") || estadoUpper.includes("FINALIZADO")) badgeClass = "badge-fin";
+                else if (estadoUpper.includes("DNF")) badgeClass = "badge-dnf";
+
+                let tiempoCarreraVal = c["TIEMPO DE CARRERA"] || '-';
+                let posDisplay = (estadoUpper.includes("FIN") || estadoUpper.includes("FINALIZADO")) ? `<span class="pos-badge">${idx + 1}</span>` : `-`;
+
+                tableHTML += `
+                    <tr>
+                        <td>${posDisplay}</td>
+                        <td><strong>#${c.dorsal}</strong></td>
+                        <td>${c.nombre}</td>
+                        <td><span class="badge ${badgeClass}">${c.estado}</span></td>
+                        <td style="color: var(--lse-gold); font-weight: bold;">${tiempoCarreraVal}</td>
+                `;
+                columnasDinamicasGlobales.forEach(col => tableHTML += `<td>${c[col] || '-'}</td>`);
+                tableHTML += `</tr>`;
+            });
+
+            tableHTML += `</tbody></table></div></div>`;
+            contenedor.innerHTML += tableHTML;
+        }
+    }
 </script>
 
 </body>
-</html>
