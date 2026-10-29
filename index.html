@@ -3,105 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seguimiento en Vivo - La Gran Travesía 100K</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>La Gran Travesía 100K - Seguimiento en Vivo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0b1329;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #f39c12;
+            margin-bottom: 25px;
+        }
+        .search-box {
+            background-color: #162247;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #2c3e50;
+            background-color: #0b1329;
+            color: white;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #162247;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #2c3e50;
+            font-size: 14px;
+        }
+        th {
+            background-color: #1f2d5a;
+            color: #f39c12;
+        }
+        tr:hover {
+            background-color: #1c2b59;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .badge-fin { background-color: #27ae60; color: white; }
+        .badge-carrera { background-color: #2980b9; color: white; }
+        .badge-dnf { background-color: #c0392b; color: white; }
+        .update-info {
+            text-align: right;
+            font-size: 12px;
+            color: #95a5a6;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
+<body>
+
+<div class="container">
+    <h1>LA GRAN TRAVESÍA 100K</h1>
     
-    <!-- Encabezado -->
-    <header class="bg-slate-950 border-b border-slate-800 py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <h1 class="text-lg font-bold tracking-wider text-amber-500 uppercase">La Gran Travesía 100K</h1>
-            <span class="text-xs bg-amber-500/10 text-amber-400 px-3 py-1 rounded-full border border-amber-500/20 font-medium">Live Tracking</span>
-        </div>
-    </header>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Buscar por Nombre o Dorsal (Ej: 101 o Juan)..." onkeyup="filtrarTabla()">
+    </div>
 
-    <main class="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
-        
-        <!-- Buscador -->
-        <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 backdrop-blur">
-            <label for="search" class="block text-sm font-medium text-slate-300 mb-2">Buscar por Nombre o Dorsal (BIB):</label>
-            <input type="text" id="search" placeholder="Ej. 101 o Carlos..." 
-                   class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:border-amber-500 transition">
-        </div>
+    <div id="updateInfo" class="update-info">Actualizando datos...</div>
 
-        <!-- Listado / Leaderboard -->
-        <div class="bg-slate-800/30 rounded-xl border border-slate-700/50 overflow-hidden">
-            <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
-                <h2 class="font-semibold text-slate-200">Competidores en Ruta</h2>
-                <span id="update-time" class="text-xs text-slate-400">Sincronizando...</span>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="bg-slate-800/80 text-slate-400 border-b border-slate-700">
-                            <th class="p-3 font-medium">Dorsal</th>
-                            <th class="p-3 font-medium">Atleta</th>
-                            <th class="p-3 font-medium">Categoría</th>
-                            <th class="p-3 font-medium">Estado</th>
-                            <th class="p-3 font-medium">Meta</th>
-                        </tr>
-                    </thead>
-                    <tbody id="runners-table" class="divide-y divide-slate-800">
-                        <!-- Se llena con JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
+    <table id="tablaCorredores">
+        <thead>
+            <tr>
+                <th>Dorsal</th>
+                <th>Atleta</th>
+                <th>Categoría</th>
+                <th>Estado</th>
+                <th>Largada</th>
+                <th>Km 50</th>
+                <th>Km 81</th>
+                <th>Meta</th>
+            </tr>
+        </thead>
+        <tbody id="cuerpoTabla">
+            <!-- Los datos se cargarán dinámicamente desde data.json -->
+        </tbody>
+    </table>
+</div>
 
-    <script>
-        let corredoresGlobal = [];
+<script>
+    let todosLosCorredores = [];
 
-        async function cargarDatos() {
-            try {
-                const response = await fetch('data.json?' + new Date().getTime());
-                const data = await response.json();
-                corredoresGlobal = data.corredores;
-                document.getElementById('update-time').innerText = `Actualizado: ${data.actualizado}`;
-                renderTable(corredoresGlobal);
-            } catch (error) {
-                console.error("Error al cargar datos:", error);
-            }
-        }
+    function cargarDatos() {
+        // Añadimos timestamp para evitar caché agresiva en móviles y GitHub Pages
+        fetch('data.json?t=' + new Date().getTime())
+            .then(response => response.json())
+            .then(data => {
+                todosLosCorredores = data.corredores;
+                document.getElementById('updateInfo').innerText = "Última actualización: " + data.actualizado;
+                mostrarCorredores(todosLosCorredores);
+            })
+            .catch(error => console.error('Error al cargar los datos:', error));
+    }
 
-        function renderTable(data) {
-            const tbody = document.getElementById('runners-table');
-            tbody.innerHTML = '';
-            
-            if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">No se encontraron corredores.</td></tr>`;
-                return;
-            }
+    function mostrarCorredores(corredores) {
+        const tbody = document.getElementById('cuerpoTabla');
+        tbody.innerHTML = "";
 
-            data.forEach(c => {
-                let badgeColor = c.estado === 'FIN' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-                
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-800/40 transition";
-                tr.innerHTML = `
-                    <td class="p-3 font-mono font-bold text-amber-400">#${c.dorsal}</td>
-                    <td class="p-3 font-medium text-slate-100">${c.nombre}</td>
-                    <td class="p-3 text-slate-400 text-xs">${c.categoria}</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded-full text-xs border ${badgeColor}">${c.estado}</span></td>
-                    <td class="p-3 font-mono text-slate-300">${c.meta}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+        corredores.forEach(c => {
+            let badgeClass = "badge-carrera";
+            if (c.estado === "FIN") badgeClass = "badge-fin";
+            if (c.estado === "DNF") badgeClass = "badge-dnf";
 
-        document.getElementById('search').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtrados = corredoresGlobal.filter(c => 
-                c.nombre.toLowerCase().includes(term) || c.dorsal.toString().includes(term)
-            );
-            renderTable(filtrados);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>#${c.dorsal}</strong></td>
+                <td>${c.nombre}</td>
+                <td>${c.categoria}</td>
+                <td><span class="badge ${badgeClass}">${c.estado}</span></td>
+                <td>${c.largada || '-'}</td>
+                <td>${c.km50 || '-'}</td>
+                <td>${c.km81 || '-'}</td>
+                <td><strong>${c.meta || '-'}</strong></td>
+            `;
+            tbody.appendChild(tr);
         });
+    }
 
-        // Cargar al inicio y refrescar cada 30 segundos
-        cargarDatos();
-        setInterval(cargarDatos, 30000);
-    </script>
+    function filtrarTabla() {
+        const filtro = document.getElementById('searchInput').value.toLowerCase();
+        const filtrados = todosLosCorredores.filter(c => {
+            return c.nombre.toLowerCase().includes(filtro) || c.dorsal.toString().includes(filtro);
+        });
+        mostrarCorredores(filtrados);
+    }
+
+    // Cargar al iniciar y actualizar automáticamente cada 15 segundos
+    cargarDatos();
+    setInterval(cargarDatos, 15000);
+</script>
+
 </body>
 </html>
