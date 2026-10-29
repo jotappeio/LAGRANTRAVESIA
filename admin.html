@@ -71,6 +71,8 @@
         button:hover { background-color: #ea580c; }
         .btn-danger { background-color: #dc2626; color: white; padding: 4px 8px; font-size: 11px; width: auto; }
         .btn-danger:hover { background-color: #b91c1c; }
+        .btn-secondary { background-color: #0284c7; margin-top: 5px; }
+        .btn-secondary:hover { background-color: #0369a1; }
         
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -129,20 +131,23 @@
         <span id="msgConfig" style="font-size: 11px; margin-left: 10px; color: #059669;"></span>
     </div>
 
-    <!-- GESTIÓN DE RUTAS POR URL GPX -->
+    <!-- GESTIÓN DE RUTAS CON BOTONES DE GUARDADO INDEPENDIENTES -->
     <div class="grid">
         <!-- RUTA 1 -->
         <div class="panel">
             <h3 style="color: var(--lse-orange);">Gestión Ruta 1</h3>
             <div class="form-group">
                 <label>Nombre Distancia (ej. 100K):</label>
-                <input type="text" id="nombreRuta1" value="100K" onchange="guardarConfiguracionEvento()">
+                <input type="text" id="nombreRuta1" value="100K">
             </div>
             <div class="form-group">
-                <label>URL Archivo GPX Ruta 1 (ej. ARCHIVOS/ruta1.gpx):</label>
-                <input type="text" id="urlGpx1" placeholder="ARCHIVOS/ruta1.gpx" onchange="guardarConfiguracionEvento()">
+                <label>URL Archivo GPX Ruta 1:</label>
+                <input type="text" id="urlGpx1" placeholder="ARCHIVOS/ruta1.gpx">
             </div>
-            <div id="map1" class="map-admin"></div>
+            <button class="btn-secondary" onclick="guardarYCargarRuta(1)">Guardar y Cargar Ruta 1</button>
+            
+            <div id="map1" class="map-admin" style="margin-top: 10px;"></div>
+            
             <div class="form-row" style="margin-top: 10px;">
                 <div><label>Nombre del Control:</label><input type="text" id="nombrePC1" placeholder="Ej: PC 1 Km 30"></div>
                 <div><label>Km en Ruta:</label><input type="number" id="kmPC1" placeholder="30" step="0.1"></div>
@@ -158,13 +163,16 @@
             <h3 style="color: var(--lse-gold);">Gestión Ruta 2</h3>
             <div class="form-group">
                 <label>Nombre Distancia (ej. 50K):</label>
-                <input type="text" id="nombreRuta2" value="50K" onchange="guardarConfiguracionEvento()">
+                <input type="text" id="nombreRuta2" value="50K">
             </div>
             <div class="form-group">
-                <label>URL Archivo GPX Ruta 2 (ej. ARCHIVOS/ruta2.gpx):</label>
-                <input type="text" id="urlGpx2" placeholder="ARCHIVOS/ruta2.gpx" onchange="guardarConfiguracionEvento()">
+                <label>URL Archivo GPX Ruta 2:</label>
+                <input type="text" id="urlGpx2" placeholder="ARCHIVOS/ruta2.gpx">
             </div>
-            <div id="map2" class="map-admin"></div>
+            <button class="btn-secondary" onclick="guardarYCargarRuta(2)">Guardar y Cargar Ruta 2</button>
+            
+            <div id="map2" class="map-admin" style="margin-top: 10px;"></div>
+            
             <div class="form-row" style="margin-top: 10px;">
                 <div><label>Nombre del Control:</label><input type="text" id="nombrePC2" placeholder="Ej: PC 1 Km 20"></div>
                 <div><label>Km en Ruta:</label><input type="number" id="kmPC2" placeholder="20" step="0.1"></div>
@@ -260,15 +268,24 @@
         localStorage.setItem("lse_logo_cabecera", document.getElementById('confLogoCabecera').value.trim());
         localStorage.setItem("lse_portada_img", document.getElementById('confPortada').value.trim());
         localStorage.setItem("lse_logo_pie", document.getElementById('confLogoPie').value.trim());
-        localStorage.setItem("lse_nombre_ruta1", document.getElementById('nombreRuta1').value.trim());
-        localStorage.setItem("lse_nombre_ruta2", document.getElementById('nombreRuta2').value.trim());
-        localStorage.setItem("lse_url_gpx1", document.getElementById('urlGpx1').value.trim());
-        localStorage.setItem("lse_url_gpx2", document.getElementById('urlGpx2').value.trim());
         localStorage.setItem("lse_vimeo_id", document.getElementById('vimeoInput').value.trim());
 
         document.getElementById('msgConfig').innerText = "¡Guardado con éxito!";
         setTimeout(() => document.getElementById('msgConfig').innerText = "", 3000);
     }
+
+    function guardarYCargarRuta(rutaNum) {
+        let nombreRuta = document.getElementById(`nombreRuta${rutaNum}`).value.trim();
+        let urlGpx = document.getElementById(`urlGpx${rutaNum}`).value.trim();
+
+        localStorage.setItem(`lse_nombre_ruta${rutaNum}`, nombreRuta);
+        localStorage.setItem(`lse_url_gpx${rutaNum}`, urlGpx);
+
+        alert(`¡Ruta ${rutaNum} (${nombreUrlClean(nombreRuta)}) guardada con éxito!`);
+        cargarGPXPorURL(urlGpx, rutaNum, true);
+    }
+
+    function nombreUrlClean(n) { return n || `Ruta ${rutaNum}`; }
 
     function initMapasAdmin() {
         if (!map1) {
@@ -281,10 +298,10 @@
         }
 
         let url1 = localStorage.getItem("lse_url_gpx1");
-        if (url1) cargarGPXPorURL(url1, 1, true);
+        if (url1 && url1.trim() !== "") cargarGPXPorURL(url1, 1, true);
 
         let url2 = localStorage.getItem("lse_url_gpx2");
-        if (url2) cargarGPXPorURL(url2, 2, true);
+        if (url2 && url2.trim() !== "") cargarGPXPorURL(url2, 2, true);
 
         restaurarPuntosControlAdmin();
     }
@@ -302,7 +319,6 @@
 
         if (rutaNum === 1) gpxLayer1 = nuevaLayer; else gpxLayer2 = nuevaLayer;
 
-        // Fetch para extraer los puntos y calcular distancias en km para los puntos de control
         fetch(url)
             .then(res => res.text())
             .then(gpxText => {
@@ -334,7 +350,7 @@
         }
 
         if (puntosGPX.length === 0) {
-            alert("Verifique que la URL del GPX sea correcta y se haya cargado en el mapa.");
+            alert("Haga clic en 'Guardar y Cargar Ruta' para procesar el GPX antes de fijar puntos.");
             return;
         }
 
@@ -361,9 +377,9 @@
 
     function restaurarPuntosControlAdmin() {
         let g1 = localStorage.getItem("lse_pcs_ruta1");
-        if (g1) { puntosControl1 = JSON.parse(g1); renderizarPCsEnMapaYTabla(1); }
+        if (g1) { puntosControl1 = JSON.parse(g1); renderizarPCsInMap(1); renderizarPCsEnMapaYTabla(1); }
         let g2 = localStorage.getItem("lse_pcs_ruta2");
-        if (g2) { puntosControl2 = JSON.parse(g2); renderizarPCsEnMapaYTabla(2); }
+        if (g2) { puntosControl2 = JSON.parse(g2); renderizarPCsInMap(2); renderizarPCsEnMapaYTabla(2); }
     }
 
     function renderizarPCsInMap(rutaNum) {
@@ -507,9 +523,9 @@
 
 ---
 
-### 2. Código Actualizado para `index.html` (Lectura de Mapas por URL)
+### 2. Código Actualizado para `index.html` (Sincronización Total de Mapas y Pestañas)
 
-Copia este bloque completo y reemplaza todo el contenido de tu archivo **`index.html`** en GitHub:
+Copia este bloque completo y reemplaza el contenido de tu archivo **`index.html`** en GitHub:
 
 ```html
 <!DOCTYPE html>
@@ -710,7 +726,7 @@ Copia este bloque completo y reemplaza todo el contenido de tu archivo **`index.
             document.getElementById('vimeoSection').style.display = 'block';
         }
 
-        setTimeout(initMapasPublicos, 300);
+        setTimeout(initMapasPublicos, 250);
     });
 
     let mapPub1, mapPub2, bounds1, bounds2;
@@ -725,13 +741,13 @@ Copia este bloque completo y reemplaza todo el contenido de tu archivo **`index.
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(mapPub2);
         }
 
-        // Cargar Ruta 1 por URL
+        // Cargar Ruta 1
         let url1 = localStorage.getItem("lse_url_gpx1");
         if (url1 && url1.trim() !== "") {
             new L.GPX(url1, { async: true, polyline_options: { color: '#f97316', weight: 4, opacity: 0.9 } })
                 .on('loaded', e => {
                     bounds1 = e.target.getBounds();
-                    mapPub1.fitBounds(bounds1);
+                    if (mapPub1) mapPub1.fitBounds(bounds1);
                 }).addTo(mapPub1);
         }
         let pcs1 = localStorage.getItem("lse_pcs_ruta1");
@@ -742,7 +758,7 @@ Copia este bloque completo y reemplaza todo el contenido de tu archivo **`index.
             });
         }
 
-        // Cargar Ruta 2 por URL
+        // Cargar Ruta 2
         let url2 = localStorage.getItem("lse_url_gpx2");
         if (url2 && url2.trim() !== "") {
             new L.GPX(url2, { async: true, polyline_options: { color: '#fbbf24', weight: 4, opacity: 0.9 } })
@@ -783,6 +799,16 @@ Copia este bloque completo y reemplaza todo el contenido de tu archivo **`index.
             if (num === 2 && mapPub2) {
                 mapPub2.invalidateSize();
                 if (bounds2) mapPub2.fitBounds(bounds2);
+                else {
+                    // Forzar re-lectura si bounds2 estaba pendiente
+                    let url2 = localStorage.getItem("lse_url_gpx2");
+                    if (url2) {
+                        new L.GPX(url2, { async: true }).on('loaded', e => {
+                            bounds2 = e.target.getBounds();
+                            mapPub2.fitBounds(bounds2);
+                        }).addTo(mapPub2);
+                    }
+                }
             }
         }, 150);
     }
