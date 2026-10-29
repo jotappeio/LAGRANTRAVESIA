@@ -65,7 +65,7 @@
             background-color: var(--lse-card); border: 1px solid var(--lse-border);
             border-radius: 8px; padding: 10px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
-        .map-pane { height: 350px; border-radius: 6px; border: 1px solid var(--lse-border); display: none; width: 100%; z-index: 1; }
+        .map-pane { height: 380px; border-radius: 6px; border: 1px solid var(--lse-border); display: none; width: 100%; z-index: 1; }
         .map-pane.active { display: block; }
 
         .search-container {
@@ -125,15 +125,15 @@
     <div class="brand-header">
         <div id="logoCabeceraContainer"></div>
         <span>Latitud Sur Expedition</span>
-        <h1 id="lblNombreEvento">La Gran Travesía 100K</h1>
+        <h1 id="lblNombreEvento">La Gran Travesía</h1>
         <p id="lblSubInfo">Resultados Oficiales en Tiempo Real</p>
     </div>
 
     <div id="portadaContainer"></div>
 
     <div class="map-selector">
-        <button class="btn-map-tab active" id="tabRuta1" onclick="cambiarMapaPublico(1)"><span id="lblTab1">100K</span></button>
-        <button class="btn-map-tab" id="tabRuta2" onclick="cambiarMapaPublico(2)"><span id="lblTab2">50K</span></button>
+        <button class="btn-map-tab active" id="tabRuta1" onclick="cambiarMapaPublico(1)"><span id="lblTab1">Ruta 1</span></button>
+        <button class="btn-map-tab" id="tabRuta2" onclick="cambiarMapaPublico(2)"><span id="lblTab2">Ruta 2</span></button>
     </div>
 
     <div class="map-wrapper">
@@ -172,81 +172,92 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        document.getElementById('lblNombreEvento').innerText = localStorage.getItem("lse_evento_nombre") || "La Gran Travesía 100K";
-        document.getElementById('pageTitle').innerText = (localStorage.getItem("lse_evento_nombre") || "Evento") + " — LSE";
-        document.getElementById('lblSubInfo').innerText = (localStorage.getItem("lse_evento_fecha") || "") + " • " + (localStorage.getItem("lse_evento_ubicacion") || "");
+        fetch('config.json?t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(cfg => {
+                document.getElementById('lblNombreEvento').innerText = cfg.evento_nombre || "Latitud Sur Expedition";
+                document.getElementById('pageTitle').innerText = (cfg.evento_nombre || "Evento") + " — LSE";
+                document.getElementById('lblSubInfo').innerText = (cfg.evento_fecha || "") + " • " + (cfg.evento_ubicacion || "");
 
-        let r1 = localStorage.getItem("lse_nombre_ruta1") || "100K";
-        let r2 = localStorage.getItem("lse_nombre_ruta2") || "50K";
-        document.getElementById('lblTab1').innerText = r1;
-        document.getElementById('lblTab2').innerText = r2;
+                let r1 = cfg.nombre_ruta1 || "100K";
+                let r2 = cfg.nombre_ruta2 || "50K";
+                document.getElementById('lblTab1').innerText = r1;
+                document.getElementById('lblTab2').innerText = r2;
 
-        let cab = localStorage.getItem("lse_logo_cabecera");
-        if (cab && cab.trim() !== "") document.getElementById('logoCabeceraContainer').innerHTML = `<img src="${cab}" alt="Logo">`;
+                if (cfg.logo_cabecera && cfg.logo_cabecera.trim() !== "") {
+                    document.getElementById('logoCabeceraContainer').innerHTML = `<img src="${cfg.logo_cabecera}" alt="Logo">`;
+                }
+                if (cfg.portada_img && cfg.portada_img.trim() !== "") {
+                    document.getElementById('portadaContainer').innerHTML = `<img src="${cfg.portada_img}" class="event-banner" alt="Portada">`;
+                }
+                if (cfg.logo_pie && cfg.logo_pie.trim() !== "") {
+                    document.getElementById('logoPieContainer').innerHTML = `<img src="${cfg.logo_pie}" alt="Auspiciadores">`;
+                }
 
-        let portada = localStorage.getItem("lse_portada_img");
-        if (portada && portada.trim() !== "") {
-            document.getElementById('portadaContainer').innerHTML = `<img src="${portada}" class="event-banner" alt="Portada">`;
-        }
+                let vimeoIdMatch = (cfg.vimeo_id || "952091357").match(/(\d+)/);
+                let vimeoId = vimeoIdMatch ? vimeoIdMatch[0] : "952091357";
+                if (vimeoId) {
+                    document.getElementById('vimeoIframe').src = `https://player.vimeo.com/video/${vimeoId}`;
+                    document.getElementById('vimeoSection').style.display = 'block';
+                }
 
-        let pie = localStorage.getItem("lse_logo_pie");
-        if (pie && pie.trim() !== "") document.getElementById('logoPieContainer').innerHTML = `<img src="${pie}" alt="Auspiciadores">`;
-
-        let vimeoInput = localStorage.getItem("lse_vimeo_id") || "952091357";
-        let vimeoIdMatch = vimeoInput.match(/(\d+)/);
-        let vimeoId = vimeoIdMatch ? vimeoIdMatch[0] : "952091357";
-
-        if (vimeoId) {
-            document.getElementById('vimeoIframe').src = `https://player.vimeo.com/video/${vimeoId}`;
-            document.getElementById('vimeoSection').style.display = 'block';
-        }
-
-        setTimeout(initMapasPublicos, 250);
+                setTimeout(() => initMapasPublicos(cfg), 250);
+            }).catch(err => console.log("Cargando web pública con valores predeterminados"));
     });
 
     let mapPub1, mapPub2, bounds1, bounds2;
 
-    function initMapasPublicos() {
-        let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+    function initMapasPublicos(cfg) {
+        // Capas base: Estándar, Satélite y Topográfico con Curvas de Nivel
+        let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' });
         let sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' });
+        let topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap (CC-BY-SA)' });
+
+        let baseMaps = {
+            "Topográfico (Curvas de Nivel)": topo,
+            "Mapa Estándar": osm,
+            "Satélite": sat
+        };
 
         if (!mapPub1) {
-            mapPub1 = L.map('mapPublic1', { center: [-33.35, -70.65], zoom: 11, layers: [osm] });
-            L.control.layers({ "Mapa Estándar": osm, "Satélite": sat }).addTo(mapPub1);
+            mapPub1 = L.map('mapPublic1', { center: [-33.35, -70.65], zoom: 11, layers: [topo] }); // Por defecto arranca en Topo
+            L.control.layers(baseMaps).addTo(mapPub1);
         }
         if (!mapPub2) {
-            mapPub2 = L.map('mapPublic2', { center: [-33.35, -70.65], zoom: 11, layers: [osm] });
-            L.control.layers({ "Mapa Estándar": osm, "Satélite": sat }).addTo(mapPub2);
+            mapPub2 = L.map('mapPublic2', { center: [-33.35, -70.65], zoom: 11, layers: [topo] });
+            L.control.layers(baseMaps).addTo(mapPub2);
         }
 
-        // Cargar Ruta 1
-        let url1 = localStorage.getItem("lse_url_gpx1");
-        if (url1 && url1.trim() !== "") {
-            new L.GPX(url1, { async: true, polyline_options: { color: '#f97316', weight: 4, opacity: 0.9 } })
-                .on('loaded', e => {
-                    bounds1 = e.target.getBounds();
-                    if (mapPub1) mapPub1.fitBounds(bounds1);
-                }).addTo(mapPub1);
+        // Cargar Ruta 1 con renderizado robusto
+        let url1 = cfg.url_gpx1 ? cfg.url_gpx1.trim() : "";
+        if (url1 !== "") {
+            new L.GPX(url1, { 
+                async: true, 
+                polyline_options: { color: '#f97316', weight: 5, opacity: 0.9 } 
+            }).on('loaded', e => {
+                bounds1 = e.target.getBounds();
+                if (mapPub1) mapPub1.fitBounds(bounds1);
+            }).addTo(mapPub1);
         }
-        let pcs1 = localStorage.getItem("lse_pcs_ruta1");
-        if (pcs1) {
-            JSON.parse(pcs1).forEach(pt => {
+        if (cfg.pcs_ruta1) {
+            cfg.pcs_ruta1.forEach(pt => {
                 L.circleMarker([pt.lat, pt.lon], { radius: 8, fillColor: '#f97316', color: "#fff", weight: 2, fillOpacity: 1 })
                  .addTo(mapPub1).bindTooltip(`<b>${pt.nombre}</b> (Km ${pt.km})`, {permanent: true, direction: 'top', className: 'my-tooltip'});
             });
         }
 
-        // Cargar Ruta 2
-        let url2 = localStorage.getItem("lse_url_gpx2");
-        if (url2 && url2.trim() !== "") {
-            new L.GPX(url2, { async: true, polyline_options: { color: '#fbbf24', weight: 4, opacity: 0.9 } })
-                .on('loaded', e => {
-                    bounds2 = e.target.getBounds();
-                }).addTo(mapPub2);
+        // Cargar Ruta 2 con renderizado robusto
+        let url2 = cfg.url_gpx2 ? cfg.url_gpx2.trim() : "";
+        if (url2 !== "") {
+            new L.GPX(url2, { 
+                async: true, 
+                polyline_options: { color: '#fbbf24', weight: 5, opacity: 0.9 } 
+            }).on('loaded', e => {
+                bounds2 = e.target.getBounds();
+            }).addTo(mapPub2);
         }
-        let pcs2 = localStorage.getItem("lse_pcs_ruta2");
-        if (pcs2) {
-            JSON.parse(pcs2).forEach(pt => {
+        if (cfg.pcs_ruta2) {
+            cfg.pcs_ruta2.forEach(pt => {
                 L.circleMarker([pt.lat, pt.lon], { radius: 8, fillColor: '#fbbf24', color: "#fff", weight: 2, fillOpacity: 1 })
                  .addTo(mapPub2).bindTooltip(`<b>${pt.nombre}</b> (Km ${pt.km})`, {permanent: true, direction: 'top', className: 'my-tooltip'});
             });
@@ -257,7 +268,7 @@
                 mapPub1.invalidateSize();
                 if (bounds1) mapPub1.fitBounds(bounds1);
             }
-        }, 300);
+        }, 400);
     }
 
     function cambiarMapaPublico(num) {
@@ -278,13 +289,14 @@
                 mapPub2.invalidateSize();
                 if (bounds2) mapPub2.fitBounds(bounds2);
                 else {
-                    let url2 = localStorage.getItem("lse_url_gpx2");
-                    if (url2) {
-                        new L.GPX(url2, { async: true }).on('loaded', e => {
-                            bounds2 = e.target.getBounds();
-                            mapPub2.fitBounds(bounds2);
-                        }).addTo(mapPub2);
-                    }
+                    fetch('config.json').then(r=>r.json()).then(cfg=>{
+                        if (cfg.url_gpx2) {
+                            new L.GPX(cfg.url_gpx2, { async: true }).on('loaded', e => {
+                                bounds2 = e.target.getBounds();
+                                mapPub2.fitBounds(bounds2);
+                            }).addTo(mapPub2);
+                        }
+                    });
                 }
             }
         }, 150);
