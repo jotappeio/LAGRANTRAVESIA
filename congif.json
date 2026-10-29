@@ -1,1 +1,15 @@
-
+{
+  "evento_nombre": "La Gran Travesía 100K",
+  "evento_fecha": "Octubre 2026",
+  "evento_ubicacion": "Chile",
+  "logo_cabecera": "ARCHIVOS/logo.png",
+  "portada_img": "ARCHIVOS/portada.jpg",
+  "logo_pie": "ARCHIVOS/auspiciadores.png",
+  "vimeo_id": "952091357",
+  "nombre_ruta1": "100K",
+  "url_gpx1": "ARCHIVOS/ruta1.gpx",
+  "nombre_ruta2": "50K",
+  "url_gpx2": "ARCHIVOS/ruta2.gpx",
+  "pcs_ruta1": [],
+  "pcs_ruta2": []
+}
