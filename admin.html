@@ -45,11 +45,11 @@
             border: 1px solid var(--lse-border);
             margin-bottom: 20px;
         }
-        #map { height: 300px; border-radius: 6px; border: 1px solid var(--lse-border); margin-bottom: 10px; }
+        #map { height: 280px; border-radius: 6px; border: 1px solid var(--lse-border); margin-bottom: 10px; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--lse-border); }
-        th { background-color: #131b2e; color: var(--lse-gold); text-transform: uppercase; font-size: 11px; }
+        th { background-color: #0b101c; color: var(--lse-muted); text-transform: uppercase; font-size: 11px; }
         
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         .form-group { margin-bottom: 10px; }
@@ -82,10 +82,23 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
         
+        .section-title {
+            background-color: #131b2e;
+            color: var(--lse-gold);
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--lse-border);
+            display: flex;
+            justify-content: space-between;
+        }
+
         .badge { padding: 3px 6px; border-radius: 4px; font-weight: 700; font-size: 11px; }
         .badge-fin { background-color: #059669; color: white; }
         .badge-carrera { background-color: #0284c7; color: white; }
         .badge-dnf { background-color: #dc2626; color: white; }
+        .pos-badge { background-color: var(--lse-orange); color: white; font-weight: 800; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
         .my-tooltip { background: var(--lse-card); color: var(--lse-gold); border: 1px solid var(--lse-orange); font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
     </style>
 </head>
@@ -102,86 +115,93 @@
 </div>
 
 <div class="container" id="mainContainer">
-    <h1>Panel de Control Técnico — La Gran Travesía 100K</h1>
+    <h1>Panel de Control Técnico — Eventos LSE</h1>
     
     <div class="grid">
+        <!-- CONFIGURACIÓN DE METADATOS Y LOGOS -->
+        <div class="panel">
+            <h3>Configuración del Evento &amp; Marca</h3>
+            <div class="form-group">
+                <label>Nombre del Evento:</label>
+                <input type="text" id="confNombreEvento" placeholder="Ej: La Gran Travesía 100K">
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Fecha:</label>
+                    <input type="text" id="confFecha" placeholder="Ej: 28-30 Octubre 2026">
+                </div>
+                <div>
+                    <label>Ubicación:</label>
+                    <input type="text" id="confUbicacion" placeholder="Ej: Cajón del Maipo, Chile">
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Logo Cabecera (Evento):</label>
+                    <input type="file" id="logoCabeceraInput" accept="image/*" style="font-size: 11px; padding: 4px;">
+                </div>
+                <div>
+                    <label>Logos Auspiciadores (Pie):</label>
+                    <input type="file" id="logoPieInput" accept="image/*" style="font-size: 11px; padding: 4px;">
+                </div>
+            </div>
+            <button onclick="guardarConfiguracionEvento()">Guardar Configuración General</button>
+        </div>
+
         <!-- MAPA Y GESTIÓN DE PUNTOS -->
         <div class="panel">
             <h3>Visualización de Ruta &amp; Controles</h3>
             <div id="map"></div>
             
-            <div class="form-group" id="gpxLoadContainer" style="margin-top: 10px;">
-                <label id="gpxLabel">1. Archivo GPX de Ruta (Guardado en memoria):</label>
-                <input type="file" id="gpxFileInput" accept=".gpx" style="font-size: 12px; padding: 4px;">
+            <div class="form-group" id="gpxLoadContainer" style="margin-top: 5px;">
+                <label id="gpxLabel">Archivo GPX de Ruta:</label>
+                <input type="file" id="gpxFileInput" accept=".gpx" style="font-size: 11px; padding: 3px;">
             </div>
 
-            <hr style="border: 0; border-top: 1px solid var(--lse-border); margin: 15px 0;">
-
-            <h3>2. Añadir / Gestionar Puntos de Control</h3>
-            <div class="form-row">
+            <div class="form-row" style="margin-top: 8px;">
                 <div>
                     <label>Nombre del Control:</label>
                     <input type="text" id="pcNombreKm" placeholder="Ej: Abastecimiento Km 50">
                 </div>
                 <div>
-                    <label>Kilómetro en la ruta:</label>
+                    <label>Kilómetro:</label>
                     <input type="number" id="pcKmTarget" placeholder="Ej: 50" step="0.1">
                 </div>
             </div>
-            <button onclick="agregarPuntoPorKilometro()">Fijar Punto en el Mapa</button>
-
-            <!-- LISTADO DE PUNTOS -->
-            <div style="margin-top: 15px;">
-                <label style="color: var(--lse-gold); font-weight: bold; margin-bottom: 5px;">Puntos Configurados:</label>
-                <div style="max-height: 90px; overflow-y: auto; background: var(--lse-dark); padding: 8px; border-radius: 6px; border: 1px solid var(--lse-border);">
-                    <table style="margin-top: 0;" id="tablaPuntosConfigurados">
-                        <tbody id="tbodyPuntosConfigurados">
-                            <tr><td style="color: var(--lse-muted); font-size: 11px;">No hay puntos creados aún.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <button onclick="agregarPuntoPorKilometro()">Fijar Punto en Mapa</button>
         </div>
+    </div>
 
-        <!-- EDICIÓN RÁPIDA -->
-        <div class="panel">
-            <h3>Edición Rápida de Atleta</h3>
+    <!-- EDICIÓN RÁPIDA DE ATLETAS -->
+    <div class="panel">
+        <h3>Edición Rápida de Atleta</h3>
+        <div class="form-row">
             <div class="form-group">
-                <label>Ingrese o Seleccione Dorsal:</label>
-                <input type="text" id="inputDorsalBusqueda" list="listaCorredores" placeholder="Escribe el dorsal (ej. 101)..." oninput="cargarDatosCorredorPorInput()">
+                <label>Seleccionar Dorsal:</label>
+                <input type="text" id="inputDorsalBusqueda" list="listaCorredores" placeholder="Escribe el dorsal..." oninput="cargarDatosCorredorPorInput()">
                 <datalist id="listaCorredores"></datalist>
             </div>
-            <div class="form-row">
-                <div>
-                    <label>Nombre del Atleta:</label>
-                    <input type="text" id="editNombre" readonly style="background-color: var(--lse-dark); color: var(--lse-muted);">
-                </div>
-                <div>
-                    <label>Estado:</label>
-                    <select id="editEstado">
-                        <option value="En Carrera">En Carrera</option>
-                        <option value="FINALIZADO">FINALIZADO</option>
-                        <option value="DNF">DNF (Abandono)</option>
-                    </select>
-                </div>
+            <div class="form-group">
+                <label>Nombre del Atleta:</label>
+                <input type="text" id="editNombre" readonly style="background-color: var(--lse-dark); color: var(--lse-muted);">
             </div>
-            <p style="font-size: 11px; color: var(--lse-orange); margin: 8px 0 4px 0;">Nota: Los tiempos se actualizan automáticamente desde tu Google Sheet.</p>
-            <button onclick="guardarCambiosCorredor()">Actualizar Estado Local</button>
-            <p id="msgFeedback" style="font-size: 11px; text-align: center; margin-top: 8px; color: #059669;"></p>
+            <div class="form-group">
+                <label>Estado:</label>
+                <select id="editEstado">
+                    <option value="En Carrera">En Carrera</option>
+                    <option value="FINALIZADO">FINALIZADO</option>
+                    <option value="DNF">DNF (Abandono)</option>
+                </select>
+            </div>
         </div>
+        <button onclick="guardarCambiosCorredor()" style="width: auto; padding: 8px 20px;">Actualizar Estado Local</button>
+        <span id="msgFeedback" style="font-size: 11px; margin-left: 10px; color: #059669;"></span>
     </div>
 
     <!-- TABLA GENERAL ADMIN -->
     <div class="panel">
-        <h3>Listado General de Competidores</h3>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr id="adminTableHeaders"></tr>
-                </thead>
-                <tbody id="tablaAdminTbody"></tbody>
-            </table>
-        </div>
+        <h3>Listado General por Clasificación</h3>
+        <div id="contenedorSeccionesAdmin" style="margin-top: 15px;"></div>
     </div>
 </div>
 
@@ -200,6 +220,7 @@
         if (ultimoAcceso && (ahora - parseInt(ultimoAcceso)) < (TIEMPO_SESION_MINUTOS * 60 * 1000)) {
             concederAcceso();
         }
+        cargarConfiguracionGuardadaEnForm();
     };
 
     function verificarPassword() {
@@ -208,14 +229,12 @@
             localStorage.setItem("adminUltimoAcceso", new Date().getTime().toString());
             concederAcceso();
         } else {
-            alert("Contraseña incorrecta. Intente nuevamente.");
+            alert("Contraseña incorrecta.");
         }
     }
 
     function handleKeyPress(event) {
-        if (event.key === "Enter") {
-            verificarPassword();
-        }
+        if (event.key === "Enter") verificarPassword();
     }
 
     function concederAcceso() {
@@ -226,23 +245,54 @@
         setInterval(cargarDatosJSON, 15000);
     }
 
+    function cargarConfiguracionGuardadaEnForm() {
+        document.getElementById('confNombreEvento').value = localStorage.getItem("lse_evento_nombre") || "La Gran Travesía 100K";
+        document.getElementById('confFecha').value = localStorage.getItem("lse_evento_fecha") || "Octubre 2026";
+        document.getElementById('confUbicacion').value = localStorage.getItem("lse_evento_ubicacion") || "Chile";
+    }
+
+    function guardarConfiguracionEvento() {
+        localStorage.setItem("lse_evento_nombre", document.getElementById('confNombreEvento').value);
+        localStorage.setItem("lse_evento_fecha", document.getElementById('confFecha').value);
+        localStorage.setItem("lse_evento_ubicacion", document.getElementById('confUbicacion').value);
+
+        // Guardar imágenes en Base64
+        const fileCabecera = document.getElementById('logoCabeceraInput').files[0];
+        if (fileCabecera) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                localStorage.setItem("lse_logo_cabecera", e.target.result);
+            };
+            reader.readAsDataURL(fileCabecera);
+        }
+
+        const filePie = document.getElementById('logoPieInput').files[0];
+        if (filePie) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                localStorage.setItem("lse_logo_pie", e.target.result);
+            };
+            reader.readAsDataURL(filePie);
+        }
+
+        alert("¡Configuración general y marcas guardadas con éxito!");
+    }
+
     let map, gpxLayer;
     let datosEvento = { evento: "", actualizado: "", corredores: [] };
     let puntosCargadosGPX = [];
     let marcadoresPuestosControl = [];
+    let columnasDinamicasGlobales = [];
 
     function initMapa() {
         if (map) return;
         map = L.map('map').setView([-33.35, -70.65], 11);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors',
-            maxZoom: 18
-        }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
 
         const gpxGuardado = localStorage.getItem("gpxRutaGuardada");
         if (gpxGuardado) {
             procesarTextoGPX(gpxGuardado, false);
-            document.getElementById('gpxLabel').innerText = "1. Archivo GPX de Ruta (Cargado desde memoria):";
+            document.getElementById('gpxLabel').innerText = "Archivo GPX (Cargado en memoria):";
         }
 
         document.getElementById('gpxFileInput').addEventListener('change', function(e) {
@@ -252,34 +302,24 @@
             reader.onload = function(evt) {
                 const gpxText = evt.target.result;
                 localStorage.setItem("gpxRutaGuardada", gpxText);
-                localStorage.removeItem("puntosControlGuardados");
-                puntosCreadosAdmin = [];
                 procesarTextoGPX(gpxText, true);
-                document.getElementById('gpxLabel').innerText = "1. Archivo GPX de Ruta (Cargado en memoria):";
             };
             reader.readAsText(file);
         });
     }
 
-    let puntosCreadosAdmin = [];
-
     function procesarTextoGPX(gpxText, centrarMapa) {
         if (gpxLayer) map.removeLayer(gpxLayer);
-        
         gpxLayer = new L.GPX(gpxText, {
             async: true,
             polyline_options: { color: '#f97316', weight: 4, opacity: 0.9 }
         }).on('loaded', function(e) {
-            if (centrarMapa) {
-                map.fitBounds(e.target.getBounds());
-            }
-            restaurarPuntosGuardados();
+            if (centrarMapa) map.fitBounds(e.target.getBounds());
         }).addTo(map);
 
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(gpxText, "text/xml");
         const trkpts = xmlDoc.getElementsByTagName("trkpt");
-        
         puntosCargadosGPX = [];
         let distanciaAcumulada = 0;
         let prevLatLng = null;
@@ -288,127 +328,47 @@
             const lat = parseFloat(trkpts[i].getAttribute("lat"));
             const lon = parseFloat(trkpts[i].getAttribute("lon"));
             const currentLatLng = L.latLng(lat, lon);
-
-            if (i > 0 && prevLatLng) {
-                distanciaAcumulada += prevLatLng.distanceTo(currentLatLng);
-            }
+            if (i > 0 && prevLatLng) distanciaAcumulada += prevLatLng.distanceTo(currentLatLng);
             prevLatLng = currentLatLng;
-
-            puntosCargadosGPX.push({
-                latlng: currentLatLng,
-                distanciaKm: distanciaAcumulada / 1000
-            });
+            puntosCargadosGPX.push({ latlng: currentLatLng, distanciaKm: distanciaAcumulada / 1000 });
         }
     }
 
     function agregarPuntoPorKilometro() {
         const nombre = document.getElementById('pcNombreKm').value.trim();
         const kmTarget = parseFloat(document.getElementById('pcKmTarget').value);
-
-        if (!nombre || isNaN(kmTarget)) {
-            alert("Ingrese un nombre y un valor de kilómetro válido.");
-            return;
-        }
-
-        if (puntosCargadosGPX.length === 0) {
-            alert("Primero debes cargar un archivo GPX válido en el panel.");
+        if (!nombre || isNaN(kmTarget) || puntosCargadosGPX.length === 0) {
+            alert("Verifique los datos o cargue un archivo GPX.");
             return;
         }
 
         let puntoMasCercano = puntosCargadosGPX[0];
         let menorDiferencia = Math.abs(puntoMasCercano.distanciaKm - kmTarget);
-
         for (let i = 1; i < puntosCargadosGPX.length; i++) {
             let diff = Math.abs(puntosCargadosGPX[i].distanciaKm - kmTarget);
-            if (diff < menorDiferencia) {
-                menorDiferencia = diff;
-                puntoMasCercano = puntosCargadosGPX[i];
-            }
+            if (diff < menorDiferencia) { menorDiferencia = diff; puntoMasCercano = puntosCargadosGPX[i]; }
         }
 
-        const nuevoPunto = {
-            id: new Date().getTime(),
-            nombre: nombre,
-            km: kmTarget,
-            lat: puntoMasCercano.latlng.lat,
-            lon: puntoMasCercano.latlng.lng,
-            realKm: puntoMasCercano.distanciaKm
-        };
-
-        puntosCreadosAdmin.push(nuevoPunto);
-        guardarYRenderizarPuntos();
+        L.circleMarker(puntoMasCercano.latlng, { radius: 8, fillColor: "#f97316", color: "#fff", weight: 2, fillOpacity: 1 })
+         .addTo(map).bindTooltip(`<b>${nombre}</b> (Km ${kmTarget})`, {permanent: true, direction: 'top'});
 
         document.getElementById('pcNombreKm').value = "";
         document.getElementById('pcKmTarget').value = "";
-    }
-
-    function guardarYRenderizarPuntos() {
-        localStorage.setItem("puntosControlGuardados", JSON.stringify(puntosCreadosAdmin));
-        renderizarPuntosEnMapaYTabla();
-    }
-
-    function restaurarPuntosGuardados() {
-        const guardados = localStorage.getItem("puntosControlGuardados");
-        if (guardados) {
-            try {
-                puntosCreadosAdmin = JSON.parse(guardados);
-                renderizarPuntosEnMapaYTabla();
-            } catch(e) {
-                puntosCreadosAdmin = [];
-            }
-        }
-    }
-
-    function renderizarPuntosEnMapaYTabla() {
-        marcadoresPuestosControl.forEach(m => map.removeLayer(m));
-        marcadoresPuestosControl = [];
-
-        const tbody = document.getElementById('tbodyPuntosConfigurados');
-        tbody.innerHTML = "";
-
-        if (puntosCreadosAdmin.length === 0) {
-            tbody.innerHTML = `<tr><td style="color: var(--lse-muted); font-size: 11px;">No hay puntos creados aún.</td></tr>`;
-            return;
-        }
-
-        puntosCreadosAdmin.forEach((pt) => {
-            const latlng = L.latLng(pt.lat, pt.lon);
-            const marker = L.circleMarker(latlng, {
-                radius: 8,
-                fillColor: "#f97316",
-                color: "#fff",
-                weight: 2,
-                fillOpacity: 1
-            }).addTo(map)
-              .bindTooltip(`<b>${pt.nombre}</b> (Km ${pt.km})`, {permanent: true, direction: 'top', className: 'my-tooltip'});
-
-            marcadoresPuestosControl.push(marker);
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="font-size: 12px;"><b>${pt.nombre}</b></td>
-                <td style="font-size: 12px;">Km ${pt.km}</td>
-                <td style="text-align: right;"><button class="btn-danger" onclick="eliminarPunto(${pt.id})">Eliminar</button></td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function eliminarPunto(id) {
-        puntosCreadosAdmin = puntosCreadosAdmin.filter(p => p.id !== id);
-        guardarYRenderizarPuntos();
+        alert(`¡Punto "${nombre}" fijado con éxito!`);
     }
 
     function cargarDatosJSON() {
         localStorage.setItem("adminUltimoAcceso", new Date().getTime().toString());
-
         fetch('data.json?t=' + new Date().getTime())
             .then(res => res.json())
             .then(data => {
                 datosEvento = data;
                 poblarDatalistCorredores();
                 if (data.corredores.length > 0) {
-                    construirTablaAdmin(data.corredores);
+                    const primerCorredor = data.corredores[0];
+                    const ignorar = ["dorsal", "nombre", "categoria", "distancia", "sexo", "estado", "TIEMPO DE CARRERA"];
+                    columnasDinamicasGlobales = Object.keys(primerCorredor).filter(k => !ignorar.includes(k));
+                    construirSeccionesAdmin(data.corredores);
                 }
             })
             .catch(err => console.error("Error al cargar data.json", err));
@@ -420,7 +380,7 @@
         datosEvento.corredores.forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.dorsal;
-            opt.textContent = `${c.nombre} (Dorsal #${c.dorsal})`;
+            opt.textContent = `${c.nombre} (#${c.dorsal})`;
             datalist.appendChild(opt);
         });
     }
@@ -428,87 +388,115 @@
     function cargarDatosCorredorPorInput() {
         const valInput = document.getElementById('inputDorsalBusqueda').value.trim();
         const corredor = datosEvento.corredores.find(c => c.dorsal.toString() === valInput);
-        
         if (corredor) {
             document.getElementById('editNombre').value = corredor.nombre || '';
             document.getElementById('editEstado').value = corredor.estado || 'En Carrera';
-            document.getElementById('msgFeedback').innerText = `Atleta seleccionado: ${corredor.nombre}`;
         } else {
             document.getElementById('editNombre').value = '';
-            document.getElementById('msgFeedback').innerText = '';
         }
     }
 
     function guardarCambiosCorredor() {
         const valInput = document.getElementById('inputDorsalBusqueda').value.trim();
-        if (!valInput) {
-            alert("Ingrese o seleccione un número de dorsal.");
-            return;
-        }
-
         let corredor = datosEvento.corredores.find(c => c.dorsal.toString() === valInput);
         if (corredor) {
             corredor.estado = document.getElementById('editEstado').value;
-            document.getElementById('msgFeedback').innerText = `¡Estado del dorsal #${corredor.dorsal} actualizado a ${corredor.estado}!`;
-            construirTablaAdmin(datosEvento.corredores);
+            document.getElementById('msgFeedback').innerText = `¡Actualizado!`;
+            construirSeccionesAdmin(datosEvento.corredores);
         } else {
-            alert("No se encontró ningún corredor con ese número de dorsal.");
+            alert("Seleccione un dorsal válido.");
         }
     }
 
-    function construirTablaAdmin(corredores) {
-        const primerCorredor = corredores[0];
-        const ignorar = ["dorsal", "nombre", "categoria", "distancia", "sexo", "estado", "TIEMPO DE CARRERA"];
-        let columnasDinamicas = Object.keys(primerCorredor).filter(k => !ignorar.includes(k));
+    function convertirHoraASegundos(strHora) {
+        if (!strHora || strHora === "-") return 999999;
+        const partes = strHora.split(":");
+        if (partes.length < 2) return 999999;
+        return (parseInt(partes[0]) * 3600) + (parseInt(partes[1]) * 60) + (partes[2] ? parseInt(partes[2]) : 0);
+    }
 
-        const trHead = document.getElementById('adminTableHeaders');
-        let headHTML = `
-            <th>Dorsal</th>
-            <th>Atleta</th>
-            <th>Distancia</th>
-            <th>Categoría</th>
-            <th>Sexo</th>
-            <th>Estado</th>
-            <th style="color: var(--lse-gold);">Tiempo Carrera</th>
-        `;
-        
-        columnasDinamicas.forEach(col => {
-            headHTML += `<th>${col}</th>`;
+    function construirSeccionesAdmin(corredores) {
+        let copiaCorredores = [...corredores];
+        copiaCorredores.sort((a, b) => {
+            const estA = (a.estado || "").toUpperCase();
+            const estB = (b.estado || "").toUpperCase();
+            const esFinA = estA.includes("FIN") || estA.includes("FINALIZADO");
+            const esFinB = estB.includes("FIN") || estB.includes("FINALIZADO");
+            const esDnfA = estA.includes("DNF");
+            const esDnfB = estB.includes("DNF");
+
+            if (esFinA && !esFinB) return -1;
+            if (!esFinA && esFinB) return 1;
+            if (esFinA && esFinB) return convertirHoraASegundos(a["TIEMPO DE CARRERA"]) - convertirHoraASegundos(b["TIEMPO DE CARRERA"]);
+            if (esDnfA && !esDnfB) return 1;
+            if (!esDnfA && esDnfB) return -1;
+
+            let idxA = -1, idxB = -1;
+            columnasDinamicasGlobales.forEach((col, idx) => {
+                if (a[col] && a[col] !== "-") idxA = idx;
+                if (b[col] && b[col] !== "-") idxB = idx;
+            });
+            return idxB - idxA;
         });
-        trHead.innerHTML = headHTML;
 
-        const tbody = document.getElementById('tablaAdminTbody');
-        tbody.innerHTML = "";
+        let grupos = {};
+        copiaCorredores.forEach(c => {
+            const dist = c.distancia || "100K";
+            const cat = c.categoria || "INDIVIDUAL";
+            const sexo = c.sexo || "M";
+            const clave = `${dist} — ${cat} (${sexo})`;
+            if (!grupos[clave]) grupos[clave] = [];
+            grupos[clave].push(c);
+        });
 
-        corredores.forEach(c => {
-            let badgeClass = "badge-carrera";
-            let estadoUpper = (c.estado || "").toUpperCase();
-            if (estadoUpper.includes("FIN") || estadoUpper.includes("FINALIZADO")) badgeClass = "badge-fin";
-            else if (estadoUpper.includes("DNF")) badgeClass = "badge-dnf";
+        const contenedor = document.getElementById('contenedorSeccionesAdmin');
+        contenedor.innerHTML = "";
 
-            let tiempoCarreraVal = c["TIEMPO DE CARRERA"] || '-';
-
-            let trHTML = `
-                <td><strong>#${c.dorsal}</strong></td>
-                <td>${c.nombre}</td>
-                <td>${c.distancia || '100K'}</td>
-                <td>${c.categoria || 'INDIVIDUAL'}</td>
-                <td>${c.sexo || 'M'}</td>
-                <td><span class="badge ${badgeClass}">${c.estado}</span></td>
-                <td style="color: var(--lse-gold); font-weight: bold;">${tiempoCarreraVal}</td>
+        for (const [grupoNombre, listaAtletas] of Object.entries(grupos)) {
+            let tableHTML = `
+                <div style="margin-bottom: 20px; border: 1px solid var(--lse-border); border-radius: 6px; overflow: hidden;">
+                    <div class="section-title">
+                        <span>${grupoNombre}</span>
+                        <span style="font-size: 11px; color: var(--lse-muted);">${listaAtletas.length} Atletas</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pos</th>
+                                    <th>Dorsal</th>
+                                    <th>Atleta</th>
+                                    <th>Estado</th>
+                                    <th style="color: var(--lse-gold);">Tiempo Carrera</th>
             `;
+            columnasDinamicasGlobales.forEach(col => tableHTML += `<th>${col}</th>`);
+            tableHTML += `</tr></thead><tbody>`;
 
-            columnasDinamicas.forEach(col => {
-                let valor = c[col] || '-';
-                trHTML += `<td>${valor}</td>`;
+            listaAtletas.forEach((c, idx) => {
+                let badgeClass = "badge-carrera";
+                let estadoUpper = (c.estado || "").toUpperCase();
+                if (estadoUpper.includes("FIN") || estadoUpper.includes("FINALIZADO")) badgeClass = "badge-fin";
+                else if (estadoUpper.includes("DNF")) badgeClass = "badge-dnf";
+
+                let tiempoCarreraVal = c["TIEMPO DE CARRERA"] || '-';
+                let posDisplay = (estadoUpper.includes("FIN") || estadoUpper.includes("FINALIZADO")) ? `<span class="pos-badge">${idx + 1}</span>` : `-`;
+
+                tableHTML += `
+                    <tr>
+                        <td>${posDisplay}</td>
+                        <td><strong>#${c.dorsal}</strong></td>
+                        <td>${c.nombre}</td>
+                        <td><span class="badge ${badgeClass}">${c.estado}</span></td>
+                        <td style="color: var(--lse-gold); font-weight: bold;">${tiempoCarreraVal}</td>
+                `;
+                columnasDinamicasGlobales.forEach(col => tableHTML += `<td>${c[col] || '-'}</td>`);
+                tableHTML += `</tr>`;
             });
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = trHTML;
-            tbody.appendChild(tr);
-        });
+            tableHTML += `</tbody></table></div></div>`;
+            contenedor.innerHTML += tableHTML;
+        }
     }
 </script>
 
 </body>
-</html>
