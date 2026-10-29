@@ -33,7 +33,7 @@
         #map { height: 350px; border-radius: 6px; border: 1px solid #2c3e50; margin-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #2c3e50; }
-        th { background-color: #1f2d5a; color: #f39c12; }
+        th { background-color: #1f2d5a; color: #f39c12; text-transform: uppercase; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         .form-group { margin-bottom: 10px; }
         label { display: block; font-size: 11px; color: #95a5a6; margin-bottom: 3px; }
@@ -60,11 +60,12 @@
         .badge-fin { background-color: #27ae60; color: white; }
         .badge-carrera { background-color: #2980b9; color: white; }
         .badge-dnf { background-color: #c0392b; color: white; }
+        .my-tooltip { background: #162247; color: #f39c12; border: 1px solid #f39c12; font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-<!-- INGRESO CON CONTRASEÑA Y ENTER -->
+<!-- INGRESO CON CONTRASEÑA -->
 <div id="loginOverlay">
     <div class="login-box">
         <h3>Acceso Administrador</h3>
@@ -104,63 +105,25 @@
             <button onclick="agregarPuntoPorKilometro()">Ubicar en el Mapa con Nombre</button>
         </div>
 
-        <!-- EDICIÓN POR DORSAL O LISTA -->
+        <!-- INFORMACIÓN GENERAL Y ESTADO -->
         <div class="panel">
-            <h3>Edición de Tiempos y Estado</h3>
-            <div class="form-group">
-                <label>Ingrese o Seleccione Dorsal:</label>
-                <input type="text" id="inputDorsalBusqueda" list="listaCorredores" placeholder="Escribe el dorsal (ej. 101) o selecciona..." oninput="cargarDatosCorredorPorInput()">
-                <datalist id="listaCorredores"></datalist>
-            </div>
-            <div class="form-row">
-                <div>
-                    <label>Largada:</label>
-                    <input type="text" id="editLargada" placeholder="10:00:00">
-                </div>
-                <div>
-                    <label>Km 50:</label>
-                    <input type="text" id="editKm50" placeholder="-">
-                </div>
-            </div>
-            <div class="form-row">
-                <div>
-                    <label>Km 81:</label>
-                    <input type="text" id="editKm81" placeholder="-">
-                </div>
-                <div>
-                    <label>Meta:</label>
-                    <input type="text" id="editMeta" placeholder="-">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Estado del Atleta:</label>
-                <select id="editEstado">
-                    <option value="En Carrera">En Carrera</option>
-                    <option value="FIN">FIN (Finalizado)</option>
-                    <option value="DNF">DNF (Abandono)</option>
-                </select>
-            </div>
-            <button onclick="guardarCambiosCorredor()">Actualizar Corredor</button>
-            <p id="msgFeedback" style="font-size: 11px; text-align: center; margin-top: 8px; color: #27ae60;"></p>
+            <h3>Estado del Sistema</h3>
+            <p style="font-size: 13px; color: #95a5a6; line-height: 1.5;">
+                Este panel muestra en tiempo real los datos sincronizados desde tu Google Sheet.<br><br>
+                • Los cambios realizados en la planilla (tiempos, nombres o estado DNF) se actualizan automáticamente mediante el activador de Google Apps Script.<br>
+                • Puedes usar el mapa superior para trazar tu ruta GPX y posicionar los puntos de control clave por kilómetro.
+            </p>
+            <div id="statusInfo" style="margin-top: 20px; font-size: 12px; color: #27ae60; text-align: center;"></div>
         </div>
     </div>
 
-    <!-- TABLA GENERAL DE MONITOREO -->
+    <!-- TABLA GENERAL DE MONITOREO DINÁMICA -->
     <div class="panel">
         <h3>Listado General de Competidores</h3>
         <div style="overflow-x: auto;">
             <table>
                 <thead>
-                    <tr>
-                        <th>Dorsal</th>
-                        <th>Atleta</th>
-                        <th>Categoría</th>
-                        <th>Estado</th>
-                        <th>Largada</th>
-                        <th>Km 50</th>
-                        <th>Km 81</th>
-                        <th>Meta</th>
-                    </tr>
+                    <tr id="adminTableHeaders"></tr>
                 </thead>
                 <tbody id="tablaAdminTbody"></tbody>
             </table>
@@ -182,12 +145,13 @@
             document.getElementById('mainContainer').style.display = 'block';
             initMapa();
             cargarDatosJSON();
+            // Actualizar datos cada 15 segundos en el panel admin
+            setInterval(cargarDatosJSON, 15000);
         } else {
             alert("Contraseña incorrecta. Intente nuevamente.");
         }
     }
 
-    // Permitir ingreso con la tecla ENTER
     function handleKeyPress(event) {
         if (event.key === "Enter") {
             verificarPassword();
@@ -295,85 +259,62 @@
             .then(res => res.json())
             .then(data => {
                 datosEvento = data;
-                poblarDatalistCorredores();
-                renderizarTablaAdmin();
+                document.getElementById('statusInfo').innerText = "Sincronizado correctamente - Última actualización: " + data.actualizado;
+                if (data.corredores.length > 0) {
+                    construirTablaAdmin(data.corredores);
+                }
             })
             .catch(err => console.error("Error al cargar data.json", err));
     }
 
-    function poblarDatalistCorredores() {
-        const datalist = document.getElementById('listaCorredores');
-        datalist.innerHTML = '';
-        datosEvento.corredores.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.dorsal;
-            opt.textContent = `${c.nombre} (Dorsal #${c.dorsal})`;
-            datalist.appendChild(opt);
-        });
-    }
+    function construirTablaAdmin(corredores) {
+        const primerCorredor = corredores[0];
+        const ignorar = ["dorsal", "nombre", "categoria", "estado"];
+        let columnasDinamicas = Object.keys(primerCorredor).filter(k => !ignorar.includes(k));
 
-    function cargarDatosCorredorPorInput() {
-        const valInput = document.getElementById('inputDorsalBusqueda').value.trim();
-        const corredor = datosEvento.corredores.find(c => c.dorsal.toString() === valInput);
+        const trHead = document.getElementById('adminTableHeaders');
+        let headHTML = `
+            <th>Dorsal</th>
+            <th>Atleta</th>
+            <th>Categoría</th>
+            <th>Estado</th>
+            <th style="color: #f39c12;">Tiempo Carrera</th>
+        `;
         
-        if (corredor) {
-            document.getElementById('editLargada').value = corredor.largada || '';
-            document.getElementById('editKm50').value = corredor.km50 || '';
-            document.getElementById('editKm81').value = corredor.km81 || '';
-            document.getElementById('editMeta').value = corredor.meta || '';
-            document.getElementById('editEstado').value = corredor.estado || 'En Carrera';
-            document.getElementById('msgFeedback').innerText = `Editando al atleta: ${corredor.nombre}`;
-        } else {
-            document.getElementById('editLargada').value = '';
-            document.getElementById('editKm50').value = '';
-            document.getElementById('editKm81').value = '';
-            document.getElementById('editMeta').value = '';
-            document.getElementById('msgFeedback').innerText = '';
-        }
-    }
+        columnasDinamicas.forEach(col => {
+            if (col.toUpperCase() !== "TIEMPO DE CARRERA") {
+                headHTML += `<th>${col}</th>`;
+            }
+        });
+        trHead.innerHTML = headHTML;
 
-    function guardarCambiosCorredor() {
-        const valInput = document.getElementById('inputDorsalBusqueda').value.trim();
-        if (!valInput) {
-            alert("Ingrese o seleccione un número de dorsal.");
-            return;
-        }
-
-        let corredor = datosEvento.corredores.find(c => c.dorsal.toString() === valInput);
-        if (corredor) {
-            corredor.largada = document.getElementById('editLargada').value || "-";
-            corredor.km50 = document.getElementById('editKm50').value || "-";
-            corredor.km81 = document.getElementById('editKm81').value || "-";
-            corredor.meta = document.getElementById('editMeta').value || "-";
-            corredor.estado = document.getElementById('editEstado').value;
-
-            document.getElementById('msgFeedback').innerText = `¡Datos del dorsal #${corredor.dorsal} actualizados con éxito!`;
-            renderizarTablaAdmin();
-        } else {
-            alert("No se encontró ningún corredor con ese número de dorsal.");
-        }
-    }
-
-    function renderizarTablaAdmin() {
         const tbody = document.getElementById('tablaAdminTbody');
         tbody.innerHTML = "";
 
-        datosEvento.corredores.forEach(c => {
+        corredores.forEach(c => {
             let badgeClass = "badge-carrera";
             if (c.estado === "FIN") badgeClass = "badge-fin";
             if (c.estado === "DNF") badgeClass = "badge-dnf";
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
+            let tiempoCarreraVal = c["TIEMPO DE CARRERA"] || c["tiempo de carrera"] || '-';
+
+            let trHTML = `
                 <td><strong>#${c.dorsal}</strong></td>
                 <td>${c.nombre}</td>
                 <td>${c.categoria}</td>
                 <td><span class="badge ${badgeClass}">${c.estado}</span></td>
-                <td>${c.largada}</td>
-                <td>${c.km50}</td>
-                <td>${c.km81}</td>
-                <td><strong>${c.meta}</strong></td>
+                <td style="color: #f39c12; font-weight: bold;">${tiempoCarreraVal}</td>
             `;
+
+            columnasDinamicas.forEach(col => {
+                if (col.toUpperCase() !== "TIEMPO DE CARRERA") {
+                    let valor = c[col] || '-';
+                    trHTML += `<td>${valor}</td>`;
+                }
+            });
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = trHTML;
             tbody.appendChild(tr);
         });
     }
