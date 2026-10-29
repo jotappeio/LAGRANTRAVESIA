@@ -1,6 +1,6 @@
 {
   "evento": "La Gran Travesía 100K",
-  "actualizado": "2026-10-29 01:30:11",
+  "actualizado": "2026-10-29 01:31:14",
   "corredores": [
     {
       "dorsal": 101,
@@ -9,8 +9,8 @@
       "estado": "En Carrera",
       "tiempos": {
         "LARGADA": "10:00:00",
-        "KM 10": "10:50:23",
-        "KM50": "-",
+        "KM 10": "-",
+        "KM50": "10:50:23",
         "KM81": "-",
         "META": "-"
       }
@@ -23,7 +23,7 @@
       "tiempos": {
         "LARGADA": "10:00:00",
         "KM 10": "-",
-        "KM50": "15:34:34",
+        "KM50": "-",
         "KM81": "-",
         "META": "-"
       }
