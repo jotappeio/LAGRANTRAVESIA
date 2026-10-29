@@ -14,7 +14,7 @@
             margin: 0;
             padding: 20px;
         }
-        .container { max-width: 1300px; margin: 0 auto; display: none; } /* Oculto hasta poner clave */
+        .container { max-width: 1300px; margin: 0 auto; display: none; }
         h1, h3 { color: #f39c12; text-align: center; }
         .grid {
             display: grid;
@@ -48,7 +48,6 @@
         }
         button:hover { background-color: #d35400; color: white; }
         
-        /* Pantalla de Contraseña */
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #0b1329; display: flex; justify-content: center; align-items: center; z-index: 9999;
@@ -65,7 +64,7 @@
 </head>
 <body>
 
-<!-- REQ 1: INGRESO CON CONTRASEÑA -->
+<!-- INGRESO CON CONTRASEÑA -->
 <div id="loginOverlay">
     <div class="login-box">
         <h3>Acceso Administrador</h3>
@@ -79,43 +78,35 @@
     <h1>PANEL DE CONTROL TÉCNICO - LA GRAN TRAVESÍA 100K</h1>
     
     <div class="grid">
-        <!-- REQ 3 & 4: MAPA, CARGA GPX Y PUNTOS DE CONTROL -->
+        <!-- MAPA, GPX Y PUNTOS INTELIGENTES POR KILÓMETRO -->
         <div class="panel">
-            <h3>Visualización de Ruta & Controles</h3>
+            <h3>Visualización de Ruta &amp; Controles</h3>
             <div id="map"></div>
             
             <div class="form-group">
-                <label>3. Cargar archivo GPX de Ruta:</label>
+                <label>1. Cargar archivo GPX de Ruta:</label>
                 <input type="file" id="gpxFileInput" accept=".gpx" style="font-size: 12px; padding: 4px;">
             </div>
 
             <hr style="border: 0; border-top: 1px solid #2c3e50; margin: 15px 0;">
 
-            <h3>4. Agregar Punto de Control al Mapa</h3>
+            <h3>2. Añadir Punto de Control por Kilómetro (Automático)</h3>
             <div class="form-row">
                 <div>
                     <label>Nombre del Control:</label>
-                    <input type="text" id="pcNombre" placeholder="Ej: Abastecimiento Km 30">
+                    <input type="text" id="pcNombreKm" placeholder="Ej: Abastecimiento Km 50">
                 </div>
                 <div>
-                    <label>Latitud:</label>
-                    <input type="text" id="pcLat" placeholder="Ej: -33.3500">
+                    <label>Kilómetro en la ruta:</label>
+                    <input type="number" id="pcKmTarget" placeholder="Ej: 50" step="0.1">
                 </div>
             </div>
-            <div class="form-row">
-                <div>
-                    <label>Longitud:</label>
-                    <input type="text" id="pcLng" placeholder="Ej: -70.6500">
-                </div>
-                <div style="display: flex; align-items: flex-end;">
-                    <button onclick="agregarPuntoControl()">Añadir al Mapa</button>
-                </div>
-            </div>
+            <button onclick="agregarPuntoPorKilometro()">Ubicar Automáticamente en el Mapa</button>
         </div>
 
-        <!-- REQ 2: EDICIÓN DE PASOS Y ESTADO POR CORREDOR -->
+        <!-- EDICIÓN DE PASOS Y ESTADO POR CORREDOR -->
         <div class="panel">
-            <h3>2. Edición de Tiempos y Estado</h3>
+            <h3>Edición de Tiempos y Estado</h3>
             <div class="form-group">
                 <label>Seleccionar Dorsal / Corredor:</label>
                 <select id="selectDorsal" onchange="cargarDatosCorredorForm()"></select>
@@ -181,7 +172,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
 
 <script>
-    // REQ 1: CONTRASEÑA ESTRICTA
     const CLAVE_AUTORIZADA = "101082";
 
     function verificarPassword() {
@@ -198,7 +188,7 @@
 
     let map, gpxLayer;
     let datosEvento = { evento: "", actualizado: "", corredores: [] };
-    let puntosControlPersonalizados = [];
+    let puntosCargadosGPX = []; // Guardará las coordenadas del track para análisis de distancia
 
     function initMapa() {
         if (map) return;
@@ -208,7 +198,7 @@
             maxZoom: 18
         }).addTo(map);
 
-        // REQ 3: Selector de Archivo GPX local
+        // Cargar archivo GPX y extraer sus puntos para análisis de distancia
         document.getElementById('gpxFileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -222,38 +212,74 @@
                     polyline_options: { color: '#f39c12', weight: 4, opacity: 0.8 }
                 }).on('loaded', function(e) {
                     map.fitBounds(e.target.getBounds());
+                    
+                    // Extraer los puntos del track GPX cargado para calcular distancias
+                    puntosCargadosGPX = [];
+                    const layers = e.target.getLayers();
+                    layers.forEach(layer => {
+                        if (layer instanceof L.Polyline) {
+                            const latlngs = layer.getLatLngs();
+                            let distanciaAcumulada = 0;
+                            
+                            for (let i = 0; i < latlngs.length; i++) {
+                                if (i > 0) {
+                                    distanciaAcumulada += latlngs[i-1].distanceTo(latlngs[i]); // en metros
+                                }
+                                puntosCargadosGPX.push({
+                                    latlng: latlngs[i],
+                                    distanciaKm: distanciaAcumulada / 1000
+                                });
+                            }
+                        }
+                    });
+                    console.log(`GPX analizado: ${puntosCargadosGPX.length} puntos de ruta registrados.`);
                 }).addTo(map);
             };
             reader.readAsText(file);
         });
     }
 
-    // REQ 4: Agregar Puntos de Control con coordenadas
-    function agregarPuntoControl() {
-        const nombre = document.getElementById('pcNombre').value;
-        const lat = parseFloat(document.getElementById('pcLat').value);
-        const lng = parseFloat(document.getElementById('pcLng').value);
+    // Identificar automáticamente la coordenada en base al kilómetro ingresado
+    function agregarPuntoPorKilometro() {
+        const nombre = document.getElementById('pcNombreKm').value;
+        const kmTarget = parseFloat(document.getElementById('pcKmTarget').value);
 
-        if (!nombre || isNaN(lat) || isNaN(lng)) {
-            alert("Ingrese un nombre válido y coordenadas numéricas (Lat, Lng).");
+        if (!nombre || isNaN(kmTarget)) {
+            alert("Ingrese un nombre y un valor de kilómetro válido.");
             return;
         }
 
-        L.circleMarker([lat, lng], {
+        if (puntosCargadosGPX.length === 0) {
+            alert("Primero debes cargar y seleccionar un archivo GPX válido en el panel.");
+            return;
+        }
+
+        // Buscar el punto del GPX cuya distancia acumulada esté más cerca del kilómetro buscado
+        let puntoMasCercano = puntosCargadosGPX[0];
+        let menorDiferencia = Math.abs(puntoMasCercano.distanciaKm - kmTarget);
+
+        for (let i = 1; i < puntosCargadosGPX.length; i++) {
+            let diff = Math.abs(puntosCargadosGPX[i].distanciaKm - kmTarget);
+            if (diff < menorDiferencia) {
+                menorDiferencia = diff;
+                puntoMasCercano = puntosCargadosGPX[i];
+            }
+        }
+
+        // Dibujar marcador inteligente en el mapa
+        L.circleMarker([puntoMasCercano.latlng.lat, puntoMasCercano.latlng.lng], {
             radius: 8,
             fillColor: "#e74c3c",
             color: "#fff",
             weight: 2,
             fillOpacity: 1
-        }).addTo(map).bindPopup(`<b>${nombre}</b><br>Lat: ${lat}, Lng: ${lng}`);
+        }).addTo(map).bindPopup(`<b>${nombre}</b><br>Km objetivo: ${kmTarget} km<br>Ubicación real en GPX: ~${puntoMasCercano.distanciaKm.toFixed(2)} km`);
 
-        alert(`Punto "${nombre}" agregado al mapa exitosamente.`);
-        document.getElementById('pcNombre').value = "";
-        document.getElementById('pcLat').value = "";
-        document.getElementById('pcLng').value = "";
+        alert(`¡Punto "${nombre}" localizado con éxito en el Km ${puntoMasCercano.distanciaKm.toFixed(2)} del GPX!`);
+        document.getElementById('pcNombreKm').value = "";
+        document.getElementById('pcKmTarget').value = "";
     }
 
-    // CARGAR DATOS DESDE DATA.JSON
     function cargarDatosJSON() {
         fetch('data.json?t=' + new Date().getTime())
             .then(res => res.json())
@@ -288,7 +314,6 @@
         document.getElementById('editEstado').value = corredor.estado || 'En Carrera';
     }
 
-    // REQ 2: GUARDAR CAMBIOS DE PASOS Y ESTADO
     function guardarCambiosCorredor() {
         const dorsalSel = document.getElementById('selectDorsal').value;
         if (!dorsalSel) {
