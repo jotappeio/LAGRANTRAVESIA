@@ -26,7 +26,7 @@
             box-sizing: border-box;
         }
 
-        .container { max-width: 1300px; margin: 0 auto; display: none; width: 100%; }
+        .container { max-width: 1300px; margin: 0 auto; display: none; width: 100%; box-sizing: border-box; }
         h1, h3 { color: var(--lse-gold); text-align: center; }
         h1 { font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
 
@@ -99,7 +99,7 @@
         .badge-fin { background-color: #059669; color: white; }
         .badge-carrera { background-color: #0284c7; color: white; }
         .badge-dnf { background-color: #dc2626; color: white; }
-        .pos-badge { background-color: var(--lse-orange); color: white; font-weight: 800; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+        .pos-badge { background-color: var(--lse-orange); color: white; font-weight: 800; padding: 2px 5px; border-radius: 4px; font-size: 10px; }
         .my-tooltip { background: var(--lse-card); color: var(--lse-gold); border: 1px solid var(--lse-orange); font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
     </style>
 </head>
@@ -116,6 +116,17 @@
 
 <div class="container" id="mainContainer">
     <h1>Panel de Control Técnico</h1>
+
+    <!-- CREDENCIALES API GITHUB -->
+    <div class="panel" style="border-color: #0284c7;">
+        <h3 style="color: #38bdf8;">Conexión Automática GitHub (API)</h3>
+        <div class="form-row">
+            <div class="form-group"><label>Repositorio (ej: usuario/repositorio):</label><input type="text" id="ghRepo" placeholder="jotappeio/LAGRANTRAS"></div>
+            <div class="form-group"><label>GitHub Personal Access Token:</label><input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx"></div>
+        </div>
+        <button class="btn-secondary" onclick="guardarCredencialesGH()">Guardar Token y Repositorio</button>
+        <span id="msgGh" style="font-size: 11px; margin-top: 5px; display:block; color: #38bdf8; text-align: center;"></span>
+    </div>
     
     <!-- CONFIGURACIÓN GENERAL -->
     <div class="panel">
@@ -133,11 +144,11 @@
             <div class="form-group"><label>URL Auspiciadores:</label><input type="text" id="confLogoPie" placeholder="ARCHIVOS/auspiciadores.png"></div>
             <div class="form-group"><label>ID Video Vimeo:</label><input type="text" id="vimeoInput" placeholder="952091357"></div>
         </div>
-        <button onclick="guardarConfiguracionEvento()">Guardar Configuración General</button>
+        <button onclick="sincronizarConfigEnGitHub()">Guardar y Actualizar en GitHub</button>
         <span id="msgConfig" style="font-size: 11px; margin-top: 5px; display:block; color: #059669; text-align: center;"></span>
     </div>
 
-    <!-- GESTIÓN DE RUTAS CON SATÉLITE -->
+    <!-- GESTIÓN DE RUTAS -->
     <div class="grid">
         <!-- RUTA 1 -->
         <div class="panel">
@@ -192,7 +203,7 @@
 
     <!-- EDICIÓN RÁPIDA -->
     <div class="panel">
-        <h3>Edición Rápida de Atleta</h3>
+        <h3>Edición Rápida de Atleta (Actualiza data.json en GitHub)</h3>
         <div class="form-row">
             <div class="form-group">
                 <label>Seleccionar Dorsal:</label>
@@ -209,7 +220,7 @@
                 </select>
             </div>
         </div>
-        <button onclick="guardarCambiosCorredor()">Actualizar Estado</button>
+        <button onclick="guardarCambiosCorredorYGitHub()">Actualizar y Sincronizar Atleta</button>
         <span id="msgFeedback" style="font-size: 11px; margin-top: 5px; display:block; color: #059669; text-align: center;"></span>
     </div>
 
@@ -231,10 +242,12 @@
     let puntosControl1 = [], puntosControl2 = [];
     let marcadoresPC1 = [], marcadoresPC2 = [];
     let columnasDinamicasGlobales = [];
+    let configGlobal = {};
 
     window.onload = function() {
         if (localStorage.getItem("adminUltimoAcceso")) concederAcceso();
-        cargarConfiguracionForm();
+        cargarCredencialesForm();
+        cargarConfiguracionRemota();
     };
 
     function verificarPassword() {
@@ -253,46 +266,133 @@
         setInterval(cargarDatosJSON, 15000);
     }
 
-    function cargarConfiguracionForm() {
-        document.getElementById('confNombreEvento').value = localStorage.getItem("lse_evento_nombre") || "La Gran Travesía 100K";
-        document.getElementById('confFecha').value = localStorage.getItem("lse_evento_fecha") || "Octubre 2026";
-        document.getElementById('confUbicacion').value = localStorage.getItem("lse_evento_ubicacion") || "Chile";
-        document.getElementById('confLogoCabecera').value = localStorage.getItem("lse_logo_cabecera") || "";
-        document.getElementById('confPortada').value = localStorage.getItem("lse_portada_img") || "";
-        document.getElementById('confLogoPie').value = localStorage.getItem("lse_logo_pie") || "";
-        document.getElementById('nombreRuta1').value = localStorage.getItem("lse_nombre_ruta1") || "100K";
-        document.getElementById('nombreRuta2').value = localStorage.getItem("lse_nombre_ruta2") || "50K";
-        document.getElementById('urlGpx1').value = localStorage.getItem("lse_url_gpx1") || "";
-        document.getElementById('urlGpx2').value = localStorage.getItem("lse_url_gpx2") || "";
-        document.getElementById('vimeoInput').value = localStorage.getItem("lse_vimeo_id") || "952091357";
+    function cargarCredencialesForm() {
+        document.getElementById('ghRepo').value = localStorage.getItem("lse_gh_repo") || "";
+        document.getElementById('ghToken').value = localStorage.getItem("lse_gh_token") || "";
     }
 
-    function guardarConfiguracionEvento() {
-        localStorage.setItem("lse_evento_nombre", document.getElementById('confNombreEvento').value);
-        localStorage.setItem("lse_evento_fecha", document.getElementById('confFecha').value);
-        localStorage.setItem("lse_evento_ubicacion", document.getElementById('confUbicacion').value);
-        localStorage.setItem("lse_logo_cabecera", document.getElementById('confLogoCabecera').value.trim());
-        localStorage.setItem("lse_portada_img", document.getElementById('confPortada').value.trim());
-        localStorage.setItem("lse_logo_pie", document.getElementById('confLogoPie').value.trim());
-        localStorage.setItem("lse_vimeo_id", document.getElementById('vimeoInput').value.trim());
-
-        document.getElementById('msgConfig').innerText = "¡Guardado con éxito!";
-        setTimeout(() => document.getElementById('msgConfig').innerText = "", 3000);
+    function guardarCredencialesGH() {
+        localStorage.setItem("lse_gh_repo", document.getElementById('ghRepo').value.trim());
+        localStorage.setItem("lse_gh_token", document.getElementById('ghToken').value.trim());
+        document.getElementById('msgGh').innerText = "¡Credenciales guardadas localmente con éxito!";
+        setTimeout(() => document.getElementById('msgGh').innerText = "", 3000);
     }
 
-    function guardarYCargarRuta(rutaNum) {
+    async function actualizarArchivoEnGitHub(pathArchivo, contenidoObjeto, mensajeCommit) {
+        let repo = localStorage.getItem("lse_gh_repo");
+        let token = localStorage.getItem("lse_gh_token");
+
+        if (!repo || !token) {
+            alert("Por favor configure su Repositorio y Token de GitHub arriba antes de guardar.");
+            return false;
+        }
+
+        let urlGet = `https://api.github.com/repos/${repo}/contents/${pathArchivo}`;
+        
+        try {
+            // 1. Obtener el SHA actual del archivo (requerido por la API de GitHub)
+            let resGet = await fetch(urlGet, {
+                headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" }
+            });
+            let sha = null;
+            if (resGet.ok) {
+                let fileData = await resGet.json();
+                sha = fileData.sha;
+            }
+
+            // 2. Preparar el contenido en Base64
+            let jsonString = JSON.stringify(contenidoObjeto, null, 2);
+            let contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
+
+            // 3. Enviar la petición PUT para actualizar el archivo
+            let resPut = await fetch(urlGet, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Accept": "application/vnd.github.v3+json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: mensajeCommit,
+                    content: contentBase64,
+                    sha: sha
+                })
+            });
+
+            if (resPut.ok) {
+                return true;
+            } else {
+                let err = await resPut.json();
+                alert("Error al actualizar en GitHub: " + (err.message || "Verifique sus credenciales"));
+                return false;
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error de conexión con la API de GitHub.");
+            return false;
+        }
+    }
+
+    function cargarConfiguracionRemota() {
+        fetch('config.json?t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(cfg => {
+                configGlobal = cfg;
+                document.getElementById('confNombreEvento').value = cfg.evento_nombre || "";
+                document.getElementById('confFecha').value = cfg.evento_fecha || "";
+                document.getElementById('confUbicacion').value = cfg.evento_ubicacion || "";
+                document.getElementById('confLogoCabecera').value = cfg.logo_cabecera || "";
+                document.getElementById('confPortada').value = cfg.portada_img || "";
+                document.getElementById('confLogoPie').value = cfg.logo_pie || "";
+                document.getElementById('nombreRuta1').value = cfg.nombre_ruta1 || "100K";
+                document.getElementById('nombreRuta2').value = cfg.nombre_ruta2 || "50K";
+                document.getElementById('urlGpx1').value = cfg.url_gpx1 || "";
+                document.getElementById('urlGpx2').value = cfg.url_gpx2 || "";
+                document.getElementById('vimeoInput').value = cfg.vimeo_id || "";
+                
+                puntosControl1 = cfg.pcs_ruta1 || [];
+                puntosControl2 = cfg.pcs_ruta2 || [];
+            }).catch(err => console.log("Cargando configuración local"));
+    }
+
+    async function sincronizarConfigEnGitHub() {
+        configGlobal.evento_nombre = document.getElementById('confNombreEvento').value;
+        configGlobal.evento_fecha = document.getElementById('confFecha').value;
+        configGlobal.evento_ubicacion = document.getElementById('confUbicacion').value;
+        configGlobal.logo_cabecera = document.getElementById('confLogoCabecera').value.trim();
+        configGlobal.portada_img = document.getElementById('confPortada').value.trim();
+        configGlobal.logo_pie = document.getElementById('confLogoPie').value.trim();
+        configGlobal.vimeo_id = document.getElementById('vimeoInput').value.trim();
+        configGlobal.nombre_ruta1 = document.getElementById('nombreRuta1').value.trim();
+        configGlobal.nombre_ruta2 = document.getElementById('nombreRuta2').value.trim();
+        configGlobal.url_gpx1 = document.getElementById('urlGpx1').value.trim();
+        configGlobal.url_gpx2 = document.getElementById('urlGpx2').value.trim();
+        configGlobal.pcs_ruta1 = puntosControl1;
+        configGlobal.pcs_ruta2 = puntosControl2;
+
+        document.getElementById('msgConfig').innerText = "Sincronizando con GitHub...";
+        let exito = await actualizarArchivoEnGitHub("config.json", configGlobal, "Actualización de configuración general desde panel admin");
+        
+        if (exito) {
+            document.getElementById('msgConfig').innerText = "¡Actualizado en GitHub con éxito!";
+            setTimeout(() => document.getElementById('msgConfig').innerText = "", 4000);
+        } else {
+            document.getElementById('msgConfig').innerText = "Error al sincronizar.";
+        }
+    }
+
+    async function guardarYCargarRuta(rutaNum) {
         let nombreRuta = document.getElementById(`nombreRuta${rutaNum}`).value.trim();
         let urlGpx = document.getElementById(`urlGpx${rutaNum}`).value.trim();
 
-        localStorage.setItem(`lse_nombre_ruta${rutaNum}`, nombreRuta);
-        localStorage.setItem(`lse_url_gpx${rutaNum}`, urlGpx);
+        if(rutaNum === 1) { configGlobal.nombre_ruta1 = nombreRuta; configGlobal.url_gpx1 = urlGpx; }
+        else { configGlobal.nombre_ruta2 = nombreRuta; configGlobal.url_gpx2 = urlGpx; }
 
-        alert(`¡Ruta ${rutaNum} (${nombreRuta}) guardada con éxito!`);
+        await sincronizarConfigEnGitHub();
         cargarGPXPorURL(urlGpx, rutaNum, true);
     }
 
     function initMapasAdmin() {
-        // Capas Base Comunes con Satélite
         let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
         let sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' });
 
@@ -305,13 +405,13 @@
             L.control.layers({ "Mapa Estándar": osm, "Satélite": sat }).addTo(map2);
         }
 
-        let url1 = localStorage.getItem("lse_url_gpx1");
-        if (url1 && url1.trim() !== "") cargarGPXPorURL(url1, 1, true);
-
-        let url2 = localStorage.getItem("lse_url_gpx2");
-        if (url2 && url2.trim() !== "") cargarGPXPorURL(url2, 2, true);
-
-        restaurarPuntosControlAdmin();
+        setTimeout(() => {
+            let url1 = document.getElementById('urlGpx1').value;
+            if (url1) cargarGPXPorURL(url1, 1, true);
+            let url2 = document.getElementById('urlGpx2').value;
+            if (url2) cargarGPXPorURL(url2, 2, true);
+            restaurarPuntosControlAdmin();
+        }, 500);
     }
 
     function cargarGPXPorURL(url, rutaNum, centrar) {
@@ -347,7 +447,7 @@
             }).catch(err => console.log("Error leyendo GPX:", err));
     }
 
-    function agregarPuntoControl(rutaNum) {
+    async function agregarPuntoControl(rutaNum) {
         let nombre = document.getElementById(`nombrePC${rutaNum}`).value.trim();
         let kmTarget = parseFloat(document.getElementById(`kmPC${rutaNum}`).value);
         let puntosGPX = rutaNum === 1 ? puntosGPX1 : puntosGPX2;
@@ -371,23 +471,18 @@
 
         let nuevoPC = { id: new Date().getTime(), nombre: nombre, km: kmTarget, lat: masCercano.latlng.lat, lon: masCercano.latlng.lng };
         if (rutaNum === 1) puntosControl1.push(nuevoPC); else puntosControl2.push(nuevoPC);
-        guardarYRenderizarPCs(rutaNum);
+        
+        renderizarPCsInMap(rutaNum);
+        renderizarPCsEnMapaYTabla(rutaNum);
+        await sincronizarConfigEnGitHub();
 
         document.getElementById(`nombrePC${rutaNum}`).value = "";
         document.getElementById(`kmPC${rutaNum}`).value = "";
     }
 
-    function guardarYRenderizarPCs(rutaNum) {
-        if (rutaNum === 1) localStorage.setItem("lse_pcs_ruta1", JSON.stringify(puntosControl1));
-        else localStorage.setItem("lse_pcs_ruta2", JSON.stringify(puntosControl2));
-        renderizarPCsEnMapaYTabla(rutaNum);
-    }
-
     function restaurarPuntosControlAdmin() {
-        let g1 = localStorage.getItem("lse_pcs_ruta1");
-        if (g1) { puntosControl1 = JSON.parse(g1); renderizarPCsInMap(1); renderizarPCsEnMapaYTabla(1); }
-        let g2 = localStorage.getItem("lse_pcs_ruta2");
-        if (g2) { puntosControl2 = JSON.parse(g2); renderizarPCsInMap(2); renderizarPCsEnMapaYTabla(2); }
+        if (puntosControl1.length > 0) { renderizarPCsInMap(1); renderizarPCsEnMapaYTabla(1); }
+        if (puntosControl2.length > 0) { renderizarPCsInMap(2); renderizarPCsEnMapaYTabla(2); }
     }
 
     function renderizarPCsInMap(rutaNum) {
@@ -427,10 +522,13 @@
         });
     }
 
-    function eliminarPC(rutaNum, id) {
+    async function eliminarPC(rutaNum, id) {
         if (rutaNum === 1) puntosControl1 = puntosControl1.filter(p => p.id !== id);
         else puntosControl2 = puntosControl2.filter(p => p.id !== id);
-        guardarYRenderizarPCs(rutaNum);
+        
+        renderizarPCsInMap(rutaNum);
+        renderizarPCsEnMapaYTabla(rutaNum);
+        await sincronizarConfigEnGitHub();
     }
 
     function cargarDatosJSON() {
@@ -463,15 +561,26 @@
         if (c) document.getElementById('editEstado').value = c.estado || 'En Carrera';
     }
 
-    function guardarCambiosCorredor() {
+    async function guardarCambiosCorredorYGitHub() {
         let val = document.getElementById('inputDorsalBusqueda').value.trim();
         let c = datosEvento.corredores.find(x => x.dorsal.toString() === val);
         if (c) {
             c.estado = document.getElementById('editEstado').value;
-            document.getElementById('msgFeedback').innerText = "¡Actualizado!";
-            setTimeout(() => document.getElementById('msgFeedback').innerText = "", 3000);
-            construirSeccionesAdmin(datosEvento.corredores);
-        } else alert("Seleccione un dorsal válido.");
+            datosEvento.actualizado = new Date().toLocaleTimeString() + " " + new Date().toLocaleDateString();
+            
+            document.getElementById('msgFeedback').innerText = "Actualizando data.json en GitHub...";
+            let exito = await actualizarArchivoEnGitHub("data.json", datosEvento, "Actualización de estado de atleta desde panel admin");
+
+            if (exito) {
+                document.getElementById('msgFeedback').innerText = "¡Atleta actualizado y sincronizado en la nube!";
+                setTimeout(() => document.getElementById('msgFeedback').innerText = "", 4000);
+                construirSeccionesAdmin(datosEvento.corredores);
+            } else {
+                document.getElementById('msgFeedback').innerText = "Error al sincronizar con GitHub.";
+            }
+        } else {
+            alert("Seleccione un dorsal válido.");
+        }
     }
 
     function convertirHoraASegundos(strHora) {
