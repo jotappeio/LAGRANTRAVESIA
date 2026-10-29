@@ -1,6 +1,6 @@
 {
   "evento": "La Gran Travesía 100K",
-  "actualizado": "2026-10-29 03:12:04",
+  "actualizado": "2026-10-29 03:12:08",
   "corredores": [
     {
       "dorsal": 101,
@@ -205,7 +205,7 @@
       "nombre": "VIVIANA LONCOPAN VARGAS",
       "distancia": "100K",
       "categoria": "INDIVIDUAL",
-      "sexo": "M",
+      "sexo": "F",
       "estado": "En Carrera",
       "LARGADA": "-",
       "KM 10": "-",
