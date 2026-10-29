@@ -1,6 +1,6 @@
 {
   "evento": "La Gran Travesía 100K",
-  "actualizado": "2026-10-29 02:16:46",
+  "actualizado": "2026-10-29 02:16:48",
   "corredores": [
     {
       "dorsal": 101,
@@ -48,7 +48,7 @@
       "categoria": "100K",
       "distancia": "INDIVIDUAL",
       "sexo": "M",
-      "estado": "EN CARRERA, DNF",
+      "estado": "DNF",
       "tiempos": {},
       "ultimoPuntoConocido": "KM 10",
       "LARGADA": "10:00:00",
