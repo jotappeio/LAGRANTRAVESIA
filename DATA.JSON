@@ -1,0 +1,39 @@
+{
+  "evento": "La Gran Travesía 100K",
+  "actualizado": "2026-10-28 12:00:00",
+  "corredores": [
+    {
+      "dorsal": 101,
+      "nombre": "Carlos Soto",
+      "categoria": "100K Varones",
+      "estado": "En Carrera",
+      "largada": "06:00:00",
+      "pas1_km25": "08:15:00",
+      "pas2_km50": "12:30:00",
+      "pas3_km75": "-",
+      "meta": "-"
+    },
+    {
+      "dorsal": 102,
+      "nombre": "María Paz Valenzuela",
+      "categoria": "100K Damas",
+      "estado": "En Carrera",
+      "largada": "06:00:00",
+      "pas1_km25": "08:10:00",
+      "pas2_km50": "12:15:00",
+      "pas3_km75": "15:40:00",
+      "meta": "-"
+    },
+    {
+      "dorsal": 103,
+      "nombre": "Esteban Riquelme",
+      "categoria": "100K Varones",
+      "estado": "FIN",
+      "largada": "06:00:00",
+      "pas1_km25": "07:50:00",
+      "pas2_km50": "11:45:00",
+      "pas3_km75": "14:50:00",
+      "meta": "18:20:00"
+    }
+  ]
+}
