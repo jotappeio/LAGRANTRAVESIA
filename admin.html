@@ -64,12 +64,12 @@
 </head>
 <body>
 
-<!-- INGRESO CON CONTRASEÑA -->
+<!-- INGRESO CON CONTRASEÑA Y ENTER -->
 <div id="loginOverlay">
     <div class="login-box">
         <h3>Acceso Administrador</h3>
         <p style="font-size: 12px; color: #95a5a6; margin-bottom: 15px;">Ingrese la contraseña de operación</p>
-        <input type="password" id="accessPassword" placeholder="Contraseña..." style="margin-bottom: 15px; text-align: center;">
+        <input type="password" id="accessPassword" placeholder="Contraseña..." style="margin-bottom: 15px; text-align: center;" onkeypress="handleKeyPress(event)">
         <button onclick="verificarPassword()">Ingresar</button>
     </div>
 </div>
@@ -187,6 +187,13 @@
         }
     }
 
+    // Permitir ingreso con la tecla ENTER
+    function handleKeyPress(event) {
+        if (event.key === "Enter") {
+            verificarPassword();
+        }
+    }
+
     let map, gpxLayer;
     let datosEvento = { evento: "", actualizado: "", corredores: [] };
     let puntosCargadosGPX = [];
@@ -243,7 +250,6 @@
         });
     }
 
-    // Agregar punto con nombre visible fijo en el mapa
     function agregarPuntoPorKilometro() {
         const nombre = document.getElementById('pcNombreKm').value;
         const kmTarget = parseFloat(document.getElementById('pcKmTarget').value);
@@ -269,7 +275,6 @@
             }
         }
 
-        // Crear marcador con nombre visible permanentemente en el mapa
         L.circleMarker(puntoMasCercano.latlng, {
             radius: 8,
             fillColor: "#e74c3c",
@@ -296,7 +301,6 @@
             .catch(err => console.error("Error al cargar data.json", err));
     }
 
-    // Poblar lista inteligente de dorsales para autocompletar o seleccionar
     function poblarDatalistCorredores() {
         const datalist = document.getElementById('listaCorredores');
         datalist.innerHTML = '';
@@ -308,7 +312,6 @@
         });
     }
 
-    // Buscar y rellenar formulario al escribir el dorsal o seleccionarlo
     function cargarDatosCorredorPorInput() {
         const valInput = document.getElementById('inputDorsalBusqueda').value.trim();
         const corredor = datosEvento.corredores.find(c => c.dorsal.toString() === valInput);
