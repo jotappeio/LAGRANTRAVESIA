@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Interno - La Gran Travesía 100K</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
+    
+    <!-- Encabezado -->
+    <header class="bg-slate-950 border-b border-slate-800 py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-lg font-bold tracking-wider text-amber-500 uppercase">Panel Control — 100K</h1>
+            <a href="index.html" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition">Ver Sitio Público ↗</a>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
+        
+        <!-- Estado de Sincronización -->
+        <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700/50 backdrop-blur space-y-3">
+            <h2 class="font-semibold text-slate-200">Gestión de Tiempos y Estado</h2>
+            <p class="text-sm text-slate-400">Aquí puedes simular la actualización del archivo de datos o exportar el control de ruta.</p>
+            
+            <div class="flex flex-wrap gap-3 pt-2">
+                <button onclick="exportarJSON()" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-medium px-4 py-2 rounded-lg text-sm transition shadow-lg shadow-amber-600/20">
+                    Descargar data.json Actualizado
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabla de Edición Rápida -->
+        <div class="bg-slate-800/30 rounded-xl border border-slate-700/50 overflow-hidden">
+            <div class="p-4 border-b border-slate-700/50">
+                <h2 class="font-semibold text-slate-200">Listado de Atletas (Edición en Vivo)</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-800/80 text-slate-400 border-b border-slate-700">
+                            <th class="p-3 font-medium">Dorsal</th>
+                            <th class="p-3 font-medium">Atleta</th>
+                            <th class="p-3 font-medium">Estado</th>
+                            <th class="p-3 font-medium">Meta (HH:MM:SS)</th>
+                            <th class="p-3 font-medium">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table" class="divide-y divide-slate-800">
+                        <!-- Se llena con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let datosGlobales = { evento: "La Gran Travesía 100K", actualizado: "", corredores: [] };
+
+        async function cargarDatosAdmin() {
+            try {
+                const response = await fetch('data.json?' + new Date().getTime());
+                datosGlobales = await response.json();
+                renderAdminTable(datosGlobales.corredores);
+            } catch (error) {
+                console.error("Error al cargar datos:", error);
+            }
+        }
+
+        function renderAdminTable(corredores) {
+            const tbody = document.getElementById('admin-table');
+            tbody.innerHTML = '';
+            
+            corredores.forEach((c, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/40 transition";
+                tr.innerHTML = `
+                    <td class="p-3 font-mono font-bold text-amber-400">#${c.dorsal}</td>
+                    <td class="p-3 font-medium text-slate-100">${c.nombre}</td>
+                    <td class="p-3">
+                        <select onchange="cambiarEstado(${index}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200">
+                            <option value="En Carrera" ${c.estado === 'En Carrera' ? 'selected' : ''}>En Carrera</option>
+                            <option value="FIN" ${c.estado === 'FIN' ? 'selected' : ''}>FIN (Llegó)</option>
+                            <option value="DNF" ${c.estado === 'DNF' ? 'selected' : ''}>DNF (Retirado)</option>
+                        </select>
+                    </td>
+                    <td class="p-3">
+                        <input type="text" value="${c.meta}" onchange="cambiarMeta(${index}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono w-24 text-slate-200">
+                    </td>
+                    <td class="p-3">
+                        <button onclick="guardarCambios(${index})" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded text-slate-200 transition">Actualizar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function cambiarEstado(index, val) {
+            datosGlobales.corredores[index].estado = val;
+        }
+
+        function cambiarMeta(index, val) {
+            datosGlobales.corredores[index].meta = val;
+        }
+
+        function guardarCambios(index) {
+            const ahora = new Date();
+            datosGlobales.actualizado = ahora.toISOString().slice(0, 19).replace('T', ' ');
+            alert(`¡Atleta #${datosGlobales.corredores[index].dorsal} actualizado correctamente en la memoria local! Recuerda descargar el JSON actualizado.`);
+        }
+
+        function exportarJSON() {
+            const ahora = new Date();
+            datosGlobales.actualizado = ahora.toISOString().slice(0, 19).replace('T', ' ');
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datosGlobales, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "data.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        cargarDatosAdmin();
+    </script>
+</body>
+</html>
