@@ -10,6 +10,14 @@
   "nombre_ruta2": "50K",
   "url_gpx1": "ARCHIVOS/80K Endurance 2026.gpx",
   "url_gpx2": "ARCHIVOS/50K Endurance 2026.gpx",
-  "pcs_ruta1": [],
+  "pcs_ruta1": [
+    {
+      "id": 1793260372235,
+      "nombre": "PC1",
+      "km": 20,
+      "lat": -33.334631,
+      "lon": -70.606131
+    }
+  ],
   "pcs_ruta2": []
 }
