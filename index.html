@@ -177,18 +177,17 @@
         document.getElementById('lblTab2').innerText = r2;
 
         let cab = localStorage.getItem("lse_logo_cabecera");
-        if (cab) document.getElementById('logoCabeceraContainer').innerHTML = `<img src="${cab}" alt="Logo">`;
+        if (cab && cab.trim() !== "") document.getElementById('logoCabeceraContainer').innerHTML = `<img src="${cab}" alt="Logo">`;
 
         let portada = localStorage.getItem("lse_portada_img");
-        if (portada) {
+        if (portada && portada.trim() !== "") {
             document.getElementById('portadaContainer').innerHTML = `<img src="${portada}" class="event-banner" alt="Portada">`;
         }
 
         let pie = localStorage.getItem("lse_logo_pie");
-        if (pie) document.getElementById('logoPieContainer').innerHTML = `<img src="${pie}" alt="Auspiciadores">`;
+        if (pie && pie.trim() !== "") document.getElementById('logoPieContainer').innerHTML = `<img src="${pie}" alt="Auspiciadores">`;
 
         let vimeoInput = localStorage.getItem("lse_vimeo_id") || "952091357";
-        // Extraer solo los números por si acaso ingresaron una URL completa
         let vimeoIdMatch = vimeoInput.match(/(\d+)/);
         let vimeoId = vimeoIdMatch ? vimeoIdMatch[0] : "952091357";
 
@@ -197,10 +196,11 @@
             document.getElementById('vimeoSection').style.display = 'block';
         }
 
-        setTimeout(initMapasPublicos, 300);
+        setTimeout(initMapasPublicos, 250);
     });
 
-    let mapPub1, mapPub2;
+    let mapPub1, mapPub2, bounds1, bounds2;
+
     function initMapasPublicos() {
         if (!mapPub1) {
             mapPub1 = L.map('mapPublic1').setView([-33.35, -70.65], 11);
@@ -211,10 +211,14 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(mapPub2);
         }
 
+        // Cargar Ruta 1
         let gpx1 = localStorage.getItem("lse_gpx_ruta1");
         if (gpx1) {
             new L.GPX(gpx1, { async: true, polyline_options: { color: '#f97316', weight: 4, opacity: 0.9 } })
-                .on('loaded', e => mapPub1.fitBounds(e.target.getBounds())).addTo(mapPub1);
+                .on('loaded', e => {
+                    bounds1 = e.target.getBounds();
+                    mapPub1.fitBounds(bounds1);
+                }).addTo(mapPub1);
         }
         let pcs1 = localStorage.getItem("lse_pcs_ruta1");
         if (pcs1) {
@@ -224,10 +228,14 @@
             });
         }
 
+        // Cargar Ruta 2
         let gpx2 = localStorage.getItem("lse_gpx_ruta2");
         if (gpx2) {
             new L.GPX(gpx2, { async: true, polyline_options: { color: '#fbbf24', weight: 4, opacity: 0.9 } })
-                .on('loaded', e => mapPub2.fitBounds(e.target.getBounds())).addTo(mapPub2);
+                .on('loaded', e => {
+                    bounds2 = e.target.getBounds();
+                    // No hacemos fitBounds automático inmediato aquí para evitar el bug del mapa oculto
+                }).addTo(mapPub2);
         }
         let pcs2 = localStorage.getItem("lse_pcs_ruta2");
         if (pcs2) {
@@ -237,8 +245,13 @@
             });
         }
 
-        // Forzar renderizado inicial del mapa activo
-        setTimeout(() => { if (mapPub1) mapPub1.invalidateSize(); }, 200);
+        // Forzar render inicial de la Ruta 1 visible
+        setTimeout(() => {
+            if (mapPub1) {
+                mapPub1.invalidateSize();
+                if (bounds1) mapPub1.fitBounds(bounds1);
+            }
+        }, 300);
     }
 
     function cambiarMapaPublico(num) {
@@ -251,8 +264,14 @@
         document.getElementById(`tabRuta${num}`).classList.add('active');
 
         setTimeout(() => {
-            if (num === 1 && mapPub1) mapPub1.invalidateSize();
-            if (num === 2 && mapPub2) mapPub2.invalidateSize();
+            if (num === 1 && mapPub1) {
+                mapPub1.invalidateSize();
+                if (bounds1) mapPub1.fitBounds(bounds1);
+            }
+            if (num === 2 && mapPub2) {
+                mapPub2.invalidateSize();
+                if (bounds2) mapPub2.fitBounds(bounds2);
+            }
         }, 150);
     }
 
