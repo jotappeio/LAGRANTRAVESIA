@@ -108,11 +108,11 @@
 </div>
 
 <div class="container" id="mainContainer">
-    <h1>Panel de Control Técnico — Múltiples Distancias Vinculadas</h1>
+    <h1>Panel de Control Técnico — Eventos LSE</h1>
     
-    <!-- CONFIGURACIÓN GENERAL -->
+    <!-- CONFIGURACIÓN GENERAL Y MULTIMEDIA -->
     <div class="panel">
-        <h3>1. Configuración General del Evento</h3>
+        <h3>1. Configuración General, Portada &amp; Video</h3>
         <div class="form-row">
             <div class="form-group"><label>Nombre del Evento:</label><input type="text" id="confNombreEvento"></div>
             <div class="form-group"><label>Fecha:</label><input type="text" id="confFecha"></div>
@@ -120,19 +120,23 @@
         </div>
         <div class="form-row">
             <div class="form-group"><label>Logo Cabecera:</label><input type="file" id="logoCabeceraInput" accept="image/*" style="font-size:11px; padding:4px;"></div>
+            <div class="form-group"><label>Imagen Portada (Banner):</label><input type="file" id="portadaInput" accept="image/*" style="font-size:11px; padding:4px;"></div>
+        </div>
+        <div class="form-row">
             <div class="form-group"><label>Logos Auspiciadores (Pie):</label><input type="file" id="logoPieInput" accept="image/*" style="font-size:11px; padding:4px;"></div>
+            <div class="form-group"><label>URL o ID Video Vimeo (Ej: 952091357):</label><input type="text" id="vimeoInput" placeholder="952091357"></div>
         </div>
         <button onclick="guardarConfiguracionEvento()" style="width: auto; padding: 8px 20px;">Guardar Configuración General</button>
     </div>
 
-    <!-- GESTIÓN DE RUTAS VINCULADAS A DISTANCIAS -->
+    <!-- GESTIÓN DE RUTAS Y DISTANCIAS -->
     <div class="grid">
         <!-- RUTA 1 -->
         <div class="panel">
             <h3 style="color: var(--lse-orange);">Gestión Ruta 1</h3>
             <div class="form-group">
-                <label>Asociar a Nombre de Distancia (ej. 100K):</label>
-                <input type="text" id="nombreRuta1" value="100K" placeholder="Debe coincidir exactamente con la columna Distancia del Sheet" onchange="guardarNombresRutas()">
+                <label>Nombre de Distancia (ej. 100K):</label>
+                <input type="text" id="nombreRuta1" value="100K" onchange="guardarNombresRutas()">
             </div>
             <div id="map1" class="map-admin"></div>
             <div class="form-group"><label>Subir GPX Ruta 1:</label><input type="file" id="gpxFile1" accept=".gpx" style="font-size:11px; padding:4px;"></div>
@@ -150,8 +154,8 @@
         <div class="panel">
             <h3 style="color: var(--lse-gold);">Gestión Ruta 2</h3>
             <div class="form-group">
-                <label>Asociar a Nombre de Distancia (ej. 50K):</label>
-                <input type="text" id="nombreRuta2" value="50K" placeholder="Debe coincidir exactamente con la columna Distancia del Sheet" onchange="guardarNombresRutas()">
+                <label>Nombre de Distancia (ej. 50K):</label>
+                <input type="text" id="nombreRuta2" value="50K" onchange="guardarNombresRutas()">
             </div>
             <div id="map2" class="map-admin"></div>
             <div class="form-group"><label>Subir GPX Ruta 2:</label><input type="file" id="gpxFile2" accept=".gpx" style="font-size:11px; padding:4px;"></div>
@@ -210,9 +214,7 @@
     let columnasDinamicasGlobales = [];
 
     window.onload = function() {
-        if (localStorage.getItem("adminUltimoAcceso")) {
-            concederAcceso();
-        }
+        if (localStorage.getItem("adminUltimoAcceso")) concederAcceso();
         cargarConfiguracionForm();
     };
 
@@ -238,6 +240,7 @@
         document.getElementById('confUbicacion').value = localStorage.getItem("lse_evento_ubicacion") || "Chile";
         document.getElementById('nombreRuta1').value = localStorage.getItem("lse_nombre_ruta1") || "100K";
         document.getElementById('nombreRuta2').value = localStorage.getItem("lse_nombre_ruta2") || "50K";
+        document.getElementById('vimeoInput').value = localStorage.getItem("lse_vimeo_id") || "952091357";
     }
 
     function guardarNombresRutas() {
@@ -250,12 +253,18 @@
         localStorage.setItem("lse_evento_nombre", document.getElementById('confNombreEvento').value);
         localStorage.setItem("lse_evento_fecha", document.getElementById('confFecha').value);
         localStorage.setItem("lse_evento_ubicacion", document.getElementById('confUbicacion').value);
+        localStorage.setItem("lse_vimeo_id", document.getElementById('vimeoInput').value.trim());
 
         const f1 = document.getElementById('logoCabeceraInput').files[0];
         if (f1) { let r = new FileReader(); r.onload = e => localStorage.setItem("lse_logo_cabecera", e.target.result); r.readAsDataURL(f1); }
+        
+        const fPortada = document.getElementById('portadaInput').files[0];
+        if (fPortada) { let r = new FileReader(); r.onload = e => localStorage.setItem("lse_portada_img", e.target.result); r.readAsDataURL(fPortada); }
+
         const f2 = document.getElementById('logoPieInput').files[0];
         if (f2) { let r = new FileReader(); r.onload = e => localStorage.setItem("lse_logo_pie", e.target.result); r.readAsDataURL(f2); }
-        alert("¡Configuración guardada exitosamente!");
+        
+        alert("¡Configuración general guardada exitosamente!");
     }
 
     function initMapasAdmin() {
@@ -274,8 +283,7 @@
         if (gpx2) procesarGPXTexto(gpx2, 2, false);
 
         document.getElementById('gpxFile1').addEventListener('change', function(e) {
-            let file = e.target.files[0];
-            if(!file) return;
+            let file = e.target.files[0]; if(!file) return;
             let r = new FileReader();
             r.onload = evt => {
                 localStorage.setItem("lse_gpx_ruta1", evt.target.result);
@@ -287,8 +295,7 @@
         });
 
         document.getElementById('gpxFile2').addEventListener('change', function(e) {
-            let file = e.target.files[0];
-            if(!file) return;
+            let file = e.target.files[0]; if(!file) return;
             let r = new FileReader();
             r.onload = evt => {
                 localStorage.setItem("lse_gpx_ruta2", evt.target.result);
@@ -305,7 +312,6 @@
     function procesarGPXTexto(gpxText, rutaNum, centrar) {
         let mapObj = rutaNum === 1 ? map1 : map2;
         let layerObj = rutaNum === 1 ? gpxLayer1 : gpxLayer2;
-
         if (layerObj) mapObj.removeLayer(layerObj);
 
         let colorRuta = rutaNum === 1 ? '#f97316' : '#fbbf24';
@@ -318,8 +324,7 @@
         let parser = new DOMParser();
         let xml = parser.parseFromString(gpxText, "text/xml");
         let trkpts = xml.getElementsByTagName("trkpt");
-        let arrPuntos = [];
-        let distAcum = 0, prev = null;
+        let arrPuntos = []; let distAcum = 0, prev = null;
 
         for (let i = 0; i < trkpts.length; i++) {
             let lat = parseFloat(trkpts[i].getAttribute("lat"));
@@ -349,14 +354,7 @@
             if (diff < menorDiff) { menorDiff = diff; masCercano = puntosGPX[i]; }
         }
 
-        let nuevoPC = {
-            id: new Date().getTime(),
-            nombre: nombre,
-            km: kmTarget,
-            lat: masCercano.latlng.lat,
-            lon: masCercano.latlng.lng
-        };
-
+        let nuevoPC = { id: new Date().getTime(), nombre: nombre, km: kmTarget, lat: masCercano.latlng.lat, lon: masCercano.latlng.lng };
         if (rutaNum === 1) puntosControl1.push(nuevoPC); else puntosControl2.push(nuevoPC);
         guardarYRenderizarPCs(rutaNum);
 
@@ -513,4 +511,3 @@
 </script>
 
 </body>
-</html>
