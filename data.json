@@ -1,6 +1,6 @@
 {
   "evento": "La Gran Travesía 100K",
-  "actualizado": "2026-10-29 03:10:58",
+  "actualizado": "2026-10-29 03:11:06",
   "corredores": [
     {
       "dorsal": 101,
@@ -95,7 +95,7 @@
     {
       "dorsal": 106,
       "nombre": "SANTIAGO MARGOZZINI",
-      "distancia": "100K",
+      "distancia": "50K",
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "En Carrera",
@@ -113,7 +113,7 @@
     {
       "dorsal": 107,
       "nombre": "ESTEBAN ALEJANDRO MARÍN TORRES",
-      "distancia": "100K",
+      "distancia": "50K",
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "En Carrera",
@@ -131,7 +131,7 @@
     {
       "dorsal": 108,
       "nombre": "MAX KEITH",
-      "distancia": "100K",
+      "distancia": "50K",
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "En Carrera",
@@ -149,7 +149,7 @@
     {
       "dorsal": 109,
       "nombre": "JAVIER IGNACIO BEDOS MORAGA",
-      "distancia": "100K",
+      "distancia": "50K",
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "En Carrera",
@@ -167,7 +167,7 @@
     {
       "dorsal": 110,
       "nombre": "LUIS ALBERTO FUENTES MUÑOZ",
-      "distancia": "100K",
+      "distancia": "50K",
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "En Carrera",
@@ -185,7 +185,7 @@
     {
       "dorsal": 111,
       "nombre": "SEBASTIAN CARRETTA",
-      "distancia": "100K",
+      "distancia": "50K",
       "categoria": "INDIVIDUAL",
       "sexo": "M",
       "estado": "En Carrera",
