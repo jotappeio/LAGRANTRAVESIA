@@ -79,13 +79,13 @@
     <h1>PANEL DE CONTROL TÉCNICO - LA GRAN TRAVESÍA 100K</h1>
     
     <div class="grid">
-        <!-- MAPA, GPX Y PUNTOS CON NOMBRE VISIBLE -->
+        <!-- MAPA, GPX Y PUNTOS CON MEMORIA LOCAL -->
         <div class="panel">
             <h3>Visualización de Ruta &amp; Controles</h3>
             <div id="map"></div>
             
-            <div class="form-group">
-                <label>1. Cargar archivo GPX de Ruta:</label>
+            <div class="form-group" id="gpxLoadContainer">
+                <label id="gpxLabel">1. Cargar archivo GPX de Ruta:</label>
                 <input type="file" id="gpxFileInput" accept=".gpx" style="font-size: 12px; padding: 4px;">
             </div>
 
@@ -105,15 +105,31 @@
             <button onclick="agregarPuntoPorKilometro()">Ubicar en el Mapa con Nombre</button>
         </div>
 
-        <!-- INFORMACIÓN GENERAL Y ESTADO -->
+        <!-- SECCIÓN DE EDICIÓN RÁPIDA DE PARTICIPANTES -->
         <div class="panel">
-            <h3>Estado del Sistema</h3>
-            <p style="font-size: 13px; color: #95a5a6; line-height: 1.5;">
-                Este panel muestra en tiempo real los datos sincronizados desde tu Google Sheet.<br><br>
-                • Los cambios realizados en la planilla (tiempos, nombres o estado DNF) se actualizan automáticamente mediante el activador de Google Apps Script.<br>
-                • Puedes usar el mapa superior para trazar tu ruta GPX y posicionar los puntos de control clave por kilómetro.
-            </p>
-            <div id="statusInfo" style="margin-top: 20px; font-size: 12px; color: #27ae60; text-align: center;"></div>
+            <h3>Edición Rápida de Atleta</h3>
+            <div class="form-group">
+                <label>Ingrese o Seleccione Dorsal:</label>
+                <input type="text" id="inputDorsalBusqueda" list="listaCorredores" placeholder="Escribe el dorsal (ej. 101) o selecciona..." oninput="cargarDatosCorredorPorInput()">
+                <datalist id="listaCorredores"></datalist>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Nombre del Atleta:</label>
+                    <input type="text" id="editNombre" readonly style="background-color: #101935; color: #95a5a6;">
+                </div>
+                <div>
+                    <label>Estado:</label>
+                    <select id="editEstado">
+                        <option value="En Carrera">En Carrera</option>
+                        <option value="FIN">FIN (Finalizado)</option>
+                        <option value="DNF">DNF (Abandono)</option>
+                    </select>
+                </div>
+            </div>
+            <p style="font-size: 11px; color: #f39c12; margin: 8px 0 4px 0;">Nota: Para modificar los tiempos de paso, edítalos directamente en tu Google Sheet vinculado.</p>
+            <button onclick="guardarCambiosCorredor()">Actualizar Estado Local</button>
+            <p id="msgFeedback" style="font-size: 11px; text-align: center; margin-top: 8px; color: #27ae60;"></p>
         </div>
     </div>
 
@@ -137,16 +153,23 @@
 
 <script>
     const CLAVE_AUTORIZADA = "101082";
+    const TIEMPO_SESION_MINUTOS = 5; // Margen de 5 minutos antes de volver a pedir clave
+
+    window.onload = function() {
+        const ultimoAcceso = localStorage.getItem("adminUltimoAcceso");
+        const ahora = new Date().getTime();
+
+        // Comprobar si la sesión sigue vigente dentro de los 5 minutos
+        if (ultimoAcceso && (ahora - parseInt(ultimoAcceso)) < (TIEMPO_SESION_MINUTOS * 60 * 1000)) {
+            concederAcceso();
+        }
+    };
 
     function verificarPassword() {
         const pass = document.getElementById('accessPassword').value;
         if (pass === CLAVE_AUTORIZADA) {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('mainContainer').style.display = 'block';
-            initMapa();
-            cargarDatosJSON();
-            // Actualizar datos cada 15 segundos en el panel admin
-            setInterval(cargarDatosJSON, 15000);
+            localStorage.setItem("adminUltimoAcceso", new Date().getTime().toString());
+            concederAcceso();
         } else {
             alert("Contraseña incorrecta. Intente nuevamente.");
         }
@@ -156,6 +179,14 @@
         if (event.key === "Enter") {
             verificarPassword();
         }
+    }
+
+    function concederAcceso() {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainContainer').style.display = 'block';
+        initMapa();
+        cargarDatosJSON();
+        setInterval(cargarDatosJSON, 15000);
     }
 
     let map, gpxLayer;
@@ -170,48 +201,62 @@
             maxZoom: 18
         }).addTo(map);
 
+        // Comprobar si ya hay un GPX guardado en la memoria local del navegador
+        const gpxGuardado = localStorage.getItem("gpxRutaGuardada");
+        if (gpxGuardado) {
+            procesarTextoGPX(gpxGuardado);
+            document.getElementById('gpxLabel').innerText = "1. Archivo GPX de Ruta (Cargado en memoria):";
+        }
+
+        // Capturar archivo subido por el usuario
         document.getElementById('gpxFileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
                 const gpxText = evt.target.result;
-                
-                if (gpxLayer) map.removeLayer(gpxLayer);
-                gpxLayer = new L.GPX(gpxText, {
-                    async: true,
-                    polyline_options: { color: '#f39c12', weight: 4, opacity: 0.8 }
-                }).on('loaded', function(e) {
-                    map.fitBounds(e.target.getBounds());
-                }).addTo(map);
-
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(gpxText, "text/xml");
-                const trkpts = xmlDoc.getElementsByTagName("trkpt");
-                
-                puntosCargadosGPX = [];
-                let distanciaAcumulada = 0;
-                let prevLatLng = null;
-
-                for (let i = 0; i < trkpts.length; i++) {
-                    const lat = parseFloat(trkpts[i].getAttribute("lat"));
-                    const lon = parseFloat(trkpts[i].getAttribute("lon"));
-                    const currentLatLng = L.latLng(lat, lon);
-
-                    if (i > 0 && prevLatLng) {
-                        distanciaAcumulada += prevLatLng.distanceTo(currentLatLng);
-                    }
-                    prevLatLng = currentLatLng;
-
-                    puntosCargadosGPX.push({
-                        latlng: currentLatLng,
-                        distanciaKm: distanciaAcumulada / 1000
-                    });
-                }
-                alert(`¡GPX analizado! Total: ${(puntosCargadosGPX[puntosCargadosGPX.length-1].distanciaKm).toFixed(2)} km.`);
+                localStorage.setItem("gpxRutaGuardada", gpxText); // Guardar permanentemente en el navegador
+                procesarTextoGPX(gpxText);
+                document.getElementById('gpxLabel').innerText = "1. Archivo GPX de Ruta (Cargado en memoria):";
             };
             reader.readAsText(file);
         });
+    }
+
+    function procesarTextoGPX(gpxText) {
+        if (gpxLayer) map.removeLayer(gpxLayer);
+        
+        gpxLayer = new L.GPX(gpxText, {
+            async: true,
+            polyline_options: { color: '#f39c12', weight: 4, opacity: 0.8 }
+        }).on('loaded', function(e) {
+            map.fitBounds(e.target.getBounds());
+        }).addTo(map);
+
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(gpxText, "text/xml");
+        const trkpts = xmlDoc.getElementsByTagName("trkpt");
+        
+        puntosCargadosGPX = [];
+        let distanciaAcumulada = 0;
+        let prevLatLng = null;
+
+        for (let i = 0; i < trkpts.length; i++) {
+            const lat = parseFloat(trkpts[i].getAttribute("lat"));
+            const lon = parseFloat(trkpts[i].getAttribute("lon"));
+            const currentLatLng = L.latLng(lat, lon);
+
+            if (i > 0 && prevLatLng) {
+                distanciaAcumulada += prevLatLng.distanceTo(currentLatLng);
+            }
+            prevLatLng = currentLatLng;
+
+            puntosCargadosGPX.push({
+                latlng: currentLatLng,
+                distanciaKm: distanciaAcumulada / 1000
+            });
+        }
+        console.log(`GPX procesado desde memoria: ${puntosCargadosGPX.length} puntos.`);
     }
 
     function agregarPuntoPorKilometro() {
@@ -255,16 +300,61 @@
     }
 
     function cargarDatosJSON() {
+        // Actualizar marca de tiempo de actividad en sesión para mantener el lapso activo
+        localStorage.setItem("adminUltimoAcceso", new Date().getTime().toString());
+
         fetch('data.json?t=' + new Date().getTime())
             .then(res => res.json())
             .then(data => {
                 datosEvento = data;
-                document.getElementById('statusInfo').innerText = "Sincronizado correctamente - Última actualización: " + data.actualizado;
+                poblarDatalistCorredores();
                 if (data.corredores.length > 0) {
                     construirTablaAdmin(data.corredores);
                 }
             })
             .catch(err => console.error("Error al cargar data.json", err));
+    }
+
+    function poblarDatalistCorredores() {
+        const datalist = document.getElementById('listaCorredores');
+        datalist.innerHTML = '';
+        datosEvento.corredores.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.dorsal;
+            opt.textContent = `${c.nombre} (Dorsal #${c.dorsal})`;
+            datalist.appendChild(opt);
+        });
+    }
+
+    function cargarDatosCorredorPorInput() {
+        const valInput = document.getElementById('inputDorsalBusqueda').value.trim();
+        const corredor = datosEvento.corredores.find(c => c.dorsal.toString() === valInput);
+        
+        if (corredor) {
+            document.getElementById('editNombre').value = corredor.nombre || '';
+            document.getElementById('editEstado').value = corredor.estado || 'En Carrera';
+            document.getElementById('msgFeedback').innerText = `Atleta seleccionado: ${corredor.nombre}`;
+        } else {
+            document.getElementById('editNombre').value = '';
+            document.getElementById('msgFeedback').innerText = '';
+        }
+    }
+
+    function guardarCambiosCorredor() {
+        const valInput = document.getElementById('inputDorsalBusqueda').value.trim();
+        if (!valInput) {
+            alert("Ingrese o seleccione un número de dorsal.");
+            return;
+        }
+
+        let corredor = datosEvento.corredores.find(c => c.dorsal.toString() === valInput);
+        if (corredor) {
+            corredor.estado = document.getElementById('editEstado').value;
+            document.getElementById('msgFeedback').innerText = `¡Estado del dorsal #${corredor.dorsal} actualizado a ${corredor.estado}!`;
+            construirTablaAdmin(datosEvento.corredores);
+        } else {
+            alert("No se encontró ningún corredor con ese número de dorsal.");
+        }
     }
 
     function construirTablaAdmin(corredores) {
