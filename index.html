@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Gran Travesía 100K - Seguimiento en Vivo</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,6 +16,20 @@
         }
         .container { max-width: 1200px; margin: 0 auto; }
         h1 { text-align: center; color: #f39c12; margin-bottom: 25px; }
+        
+        .map-container {
+            background-color: #162247;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        #map {
+            height: 400px;
+            border-radius: 6px;
+            border: 1px solid #2c3e50;
+        }
+
         .search-box {
             background-color: #162247; padding: 20px; border-radius: 8px; margin-bottom: 25px;
         }
@@ -41,6 +57,11 @@
 <div class="container">
     <h1>LA GRAN TRAVESÍA 100K</h1>
     
+    <div class="map-container">
+        <h3 style="color: #f39c12; margin-top: 0; text-align: center;">Mapa de la Ruta &amp; Puestos de Control</h3>
+        <div id="map"></div>
+    </div>
+
     <div class="search-box">
         <input type="text" id="searchInput" placeholder="Buscar por Nombre o Dorsal..." onkeyup="filtrarTabla()">
     </div>
@@ -57,7 +78,28 @@
     </div>
 </div>
 
+<!-- Leaflet JS y Plugin GPX -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+
 <script>
+    const map = L.map('map').setView([-33.35, -70.65], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(map);
+
+    try {
+        new L.GPX('ruta.gpx', { 
+            async: true, 
+            polyline_options: { color: '#f39c12', weight: 4, opacity: 0.8 } 
+        }).on('loaded', function(e) {
+            map.fitBounds(e.target.getBounds());
+        }).addTo(map);
+    } catch(e) {
+        console.log("Carga de GPX pendiente en el repositorio.");
+    }
+
     let todosLosCorredores = [];
 
     function cargarDatos() {
@@ -76,24 +118,22 @@
 
     function construirTabla(corredores) {
         const primerCorredor = corredores[0];
-        // Sacamos las fijas y dejamos que las de control y tiempo de carrera entren dinámicas
-        const ignorar = ["dorsal", "nombre", "categoria", "estado"];
+        const ignorar = ["dorsal", "nombre", "categoria", "distancia", "sexo", "estado", "TIEMPO DE CARRERA"];
         let columnasDinamicas = Object.keys(primerCorredor).filter(k => !ignorar.includes(k));
 
-        // Asegurar que "TIEMPO DE CARRERA" quede al principio o al final según prefieras (aquí la ordenamos antes de los parciales si existe)
         const trHead = document.getElementById('tableHeaders');
         let headHTML = `
             <th>Dorsal</th>
             <th>Atleta</th>
+            <th>Distancia</th>
             <th>Categoría</th>
+            <th>Sexo</th>
             <th>Estado</th>
             <th style="color: #f39c12;">Tiempo Carrera</th>
         `;
         
         columnasDinamicas.forEach(col => {
-            if (col.toUpperCase() !== "TIEMPO DE CARRERA") {
-                headHTML += `<th>${col}</th>`;
-            }
+            headHTML += `<th>${col}</th>`;
         });
         trHead.innerHTML = headHTML;
 
@@ -106,24 +146,25 @@
 
         corredores.forEach(c => {
             let badgeClass = "badge-carrera";
-            if (c.estado === "FIN") badgeClass = "badge-fin";
-            if (c.estado === "DNF") badgeClass = "badge-dnf";
+            let estadoUpper = (c.estado || "").toUpperCase();
+            if (estadoUpper.includes("FIN") || estadoUpper.includes("FINALIZADO")) badgeClass = "badge-fin";
+            else if (estadoUpper.includes("DNF")) badgeClass = "badge-dnf";
 
-            let tiempoCarreraVal = c["TIEMPO DE CARRERA"] || c["tiempo de carrera"] || '-';
+            let tiempoCarreraVal = c["TIEMPO DE CARRERA"] || '-';
 
             let trHTML = `
                 <td><strong>#${c.dorsal}</strong></td>
                 <td>${c.nombre}</td>
-                <td>${c.categoria}</td>
+                <td>${c.distancia || '100K'}</td>
+                <td>${c.categoria || 'INDIVIDUAL'}</td>
+                <td>${c.sexo || 'M'}</td>
                 <td><span class="badge ${badgeClass}">${c.estado}</span></td>
                 <td class="tiempo-carrera">${tiempoCarreraVal}</td>
             `;
 
             columnasDinamicas.forEach(col => {
-                if (col.toUpperCase() !== "TIEMPO DE CARRERA") {
-                    let valor = c[col] || '-';
-                    trHTML += `<td>${valor}</td>`;
-                }
+                let valor = c[col] || '-';
+                trHTML += `<td>${valor}</td>`;
             });
 
             const tr = document.createElement('tr');
@@ -139,7 +180,7 @@
         });
         
         if (filtrados.length > 0) {
-            const ignorar = ["dorsal", "nombre", "categoria", "estado"];
+            const ignorar = ["dorsal", "nombre", "categoria", "distancia", "sexo", "estado", "TIEMPO DE CARRERA"];
             const columnasDinamicas = Object.keys(filtrados[0]).filter(k => !ignorar.includes(k));
             mostrarFiltrados(filtrados, columnasDinamicas);
         }
