@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Admin - La Gran Travesía 100K</title>
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body {
@@ -14,180 +13,225 @@
             margin: 0;
             padding: 20px;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #f39c12;
-            text-align: center;
-        }
+        .container { max-width: 1200px; margin: 0 auto; display: none; } /* Oculto por defecto hasta validar clave */
+        h1, h3 { color: #f39c12; text-align: center; }
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-top: 20px;
         }
-        @media (max-width: 900px) {
-            .grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
         .panel {
             background-color: #162247;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
         }
-        #map {
-            height: 450px;
-            border-radius: 6px;
-            border: 1px solid #2c3e50;
+        #map { height: 350px; border-radius: 6px; border: 1px solid #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #2c3e50; }
+        th { background-color: #1f2d5a; color: #f39c12; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 12px; color: #95a5a6; margin-bottom: 4px; }
+        input, select {
+            width: 100%; padding: 8px; font-size: 14px;
+            border-radius: 4px; border: 1px solid #2c3e50;
+            background-color: #0b1329; color: white; box-sizing: border-box;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 13px;
+        button {
+            background-color: #f39c12; color: #0b1329; border: none;
+            padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%;
         }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #2c3e50;
+        button:hover { background-color: #d35400; color: white; }
+        /* Pantalla de bloqueo por contraseña */
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0b1329; display: flex; justify-content: center; align-items: center; z-index: 9999;
         }
-        th {
-            background-color: #1f2d5a;
-            color: #f39c12;
+        .login-box {
+            background-color: #162247; padding: 30px; border-radius: 8px; width: 300px; text-align: center;
         }
-        .badge {
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 11px;
-        }
-        .badge-fin { background-color: #27ae60; color: white; }
-        .badge-carrera { background-color: #2980b9; color: white; }
-        .badge-dnf { background-color: #c0392b; color: white; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>PANEL DE CONTROL INTERNO - LA GRAN TRAVESÍA 100K</h1>
+<!-- PANTALLA DE ACCESO PROTEGIDO -->
+<div id="loginOverlay">
+    <div class="login-box">
+        <h3>Acceso Restringido</h3>
+        <p style="font-size: 12px; color: #95a5a6;">Ingresa tu clave de operador</p>
+        <input type="password" id="accessPassword" placeholder="Contraseña..." style="margin-bottom: 15px;">
+        <button onclick="verificarPassword()">Ingresar</button>
+    </div>
+</div>
+
+<div class="container" id="mainContainer">
+    <h1>PANEL DE OPERACIONES - LA GRAN TRAVESÍA 100K</h1>
     
     <div class="grid">
-        <!-- Panel Izquierdo: Mapa de Ruta y Puntos de Control -->
+        <!-- Panel Izquierdo: Mapa de Ruta -->
         <div class="panel">
-            <h3>Mapa de Ruta & Puestos de Control</h3>
-            <p style="font-size: 12px; color: #95a5a6;">Visualización general del trazado GPX y posición estimada de los controles.</p>
+            <h3>Mapa & Puestos de Control</h3>
             <div id="map"></div>
         </div>
 
-        <!-- Panel Derecho: Estado de Competidores en Vivo -->
+        <!-- Panel Derecho: Registrar / Actualizar Tiempos en Campo -->
         <div class="panel">
-            <h3>Monitoreo de Campo (Data JSON)</h3>
-            <div style="overflow-x: auto;">
-                <table id="adminTable">
-                    <thead>
-                        <tr>
-                            <th>Dorsal</th>
-                            <th>Atleta</th>
-                            <th>Estado</th>
-                            <th>Último Punto</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminTbody">
-                        <!-- Cargado dinámicamente -->
-                    </tbody>
-                </table>
+            <h3>Registro Rápido de Tiempos</h3>
+            <div class="form-group">
+                <label>Número de Dorsal:</label>
+                <input type="number" id="inputDorsal" placeholder="Ej: 101">
             </div>
+            <div class="form-group">
+                <label>Punto de Control:</label>
+                <select id="selectPunto">
+                    <option value="largada">Largada</option>
+                    <option value="km50">Km 50</option>
+                    <option value="km81">Km 81</option>
+                    <option value="meta">Meta Oficial</option>
+                    <option value="dnf">DNF (Abandono)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Hora de Paso (HH:MM:SS):</label>
+                <input type="text" id="inputHora" placeholder="Ej: 14:35:00">
+            </div>
+            <button onclick="registrarPaso()">Actualizar en Planilla / Sistema</button>
+            <p id="msgEstado" style="font-size: 12px; text-align: center; margin-top: 10px; color: #27ae60;"></p>
+        </div>
+    </div>
+
+    <!-- Panel Inferior: Listado de Competidores -->
+    <div class="panel">
+        <h3>Estado Actual de Competidores</h3>
+        <div style="overflow-x: auto;">
+            <table id="adminTable">
+                <thead>
+                    <tr>
+                        <th>Dorsal</th>
+                        <th>Atleta</th>
+                        <th>Categoría</th>
+                        <th>Estado</th>
+                        <th>Largada</th>
+                        <th>Km 50</th>
+                        <th>Km 81</th>
+                        <th>Meta</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTbody"></tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<!-- Leaflet JS y Plugin de GPX -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
 
 <script>
-    // 1. Inicializar el Mapa centrado en la zona (ej. Precordillera / Peldehue)
-    const map = L.map('map').setView([-33.35, -70.65], 11);
+    // CONTRASEÑA DE ACCESO (Modifícala por la que prefieras)
+    const CLAVE_SECRETA = "travesia2026";
 
-    // Capa base de mapa oscuro/técnico (CartoDB Dark Matter)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-        maxZoom: 18
-    }).addTo(map);
-
-    // 2. Cargar el archivo GPX de la ruta (debe estar en tu repositorio como 'ruta.gpx')
-    // Si aún no subes el GPX, puedes comentar esta sección temporalmente
-    const gpxPath = 'ruta.gpx'; 
-    new L.GPX(gpxPath, {
-        async: true,
-        polyline_options: {
-            color: '#f39c12',
-            weight: 4,
-            opacity: 0.8
-        },
-        marker_options: {
-            startIcon: null,
-            endIcon: null,
-            wptIcons: {}
+    function verificarPassword() {
+        const pass = document.getElementById('accessPassword').value;
+        if (pass === CLAVE_SECRETA) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
+            inicializarMapa();
+            cargarDatosAdmin();
+        } else {
+            alert("Contraseña incorrecta");
         }
-    }).on('loaded', function(e) {
-        map.fitBounds(e.target.getBounds());
-    }).addTo(map);
+    }
 
-    // 3. Puntos de Control Fijos en el Mapa (Coordenadas de referencia aproximadas)
-    const puntosControl = [
-        { nombre: "Base Camp / Largada", coords: [-33.38, -70.68], id: "LARGADA" },
-        { nombre: "Control Km 50", coords: [-33.30, -70.58], id: "KM50" },
-        { nombre: "Control Km 81", coords: [-33.25, -70.50], id: "KM81" },
-        { nombre: "Meta Oficial", coords: [-33.38, -70.68], id: "META" }
-    ];
+    let map;
+    function inicializarMapa() {
+        if (map) return;
+        map = L.map('map').setView([-33.35, -70.65], 11);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18 }).addTo(map);
 
-    puntosControl.forEach(pc => {
-        L.circleMarker(pc.coords, {
-            radius: 8,
-            fillColor: "#e74c3c",
-            color: "#fff",
-            weight: 2,
-            fillOpacity: 1
-        }).addTo(map).bindPopup(`<b>${pc.nombre}</b>`);
-    });
+        // Cargar GPX si está disponible
+        try {
+            new L.GPX('ruta.gpx', { async: true, polyline_options: { color: '#f39c12', weight: 4 } }).on('loaded', function(e) {
+                map.fitBounds(e.target.getBounds());
+            }).addTo(map);
+        } catch(e) { console.log("GPX no cargado aún"); }
 
-    // 4. Cargar datos de corredores desde data.json
-    function cargarAdminData() {
+        const puntosControl = [
+            { nombre: "Base Camp / Largada", coords: [-33.38, -70.68] },
+            { nombre: "Control Km 50", coords: [-33.30, -70.58] },
+            { nombre: "Control Km 81", coords: [-33.25, -70.50] },
+            { nombre: "Meta Oficial", coords: [-33.38, -70.68] }
+        ];
+
+        puntosControl.forEach(pc => {
+            L.circleMarker(pc.coords, { radius: 7, fillColor: "#e74c3c", color: "#fff", weight: 2, fillOpacity: 1 })
+             .addTo(map).bindPopup(`<b>${pc.nombre}</b>`);
+        });
+    }
+
+    let datosGlobales = [];
+
+    function cargarDatosAdmin() {
         fetch('data.json?t=' + new Date().getTime())
             .then(res => res.json())
             .then(data => {
+                datosGlobales = data.corredores;
                 const tbody = document.getElementById('adminTbody');
                 tbody.innerHTML = "";
 
-                data.corredores.forEach(c => {
-                    let badgeClass = "badge-carrera";
-                    if (c.estado === "FIN") badgeClass = "badge-fin";
-                    if (c.estado === "DNF") badgeClass = "badge-dnf";
-
-                    // Determinar el último punto alcanzado
-                    let ultimoPunto = "Largada";
-                    if (c.meta && c.meta !== "-") ultimoPunto = "Meta (" + c.meta + ")";
-                    else if (c.km81 && c.km81 !== "-") ultimoPunto = "Km 81 (" + c.km81 + ")";
-                    else if (c.km50 && c.km50 !== "-") ultimoPunto = "Km 50 (" + c.km50 + ")";
-                    else if (c.largada && c.largada !== "-") ultimoPunto = "Largada (" + c.largada + ")";
-
+                datosGlobales.forEach(c => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><strong>#${c.dorsal}</strong></td>
                         <td>${c.nombre}</td>
-                        <td><span class="badge ${badgeClass}">${c.estado}</span></td>
-                        <td>${ultimoPunto}</td>
+                        <td>${c.categoria}</td>
+                        <td>${c.estado}</td>
+                        <td>${c.largada || '-'}</td>
+                        <td>${c.km50 || '-'}</td>
+                        <td>${c.km81 || '-'}</td>
+                        <td><strong>${c.meta || '-'}</strong></td>
                     `;
                     tbody.appendChild(tr);
                 });
             });
     }
 
-    cargarAdminData();
-    setInterval(cargarAdminData, 15000);
+    function registrarPaso() {
+        const dorsal = document.getElementById('inputDorsal').value;
+        const punto = document.getElementById('selectPunto').value;
+        const hora = document.getElementById('inputHora').value;
+
+        if (!dorsal || !hora) {
+            alert("Por favor ingresa el dorsal y la hora.");
+            return;
+        }
+
+        // Buscar al corredor en la data local para actualizarlo de inmediato
+        let corredor = datosGlobales.find(c => c.dorsal.toString() === dorsal.toString());
+        if (!corredor) {
+            alert("No se encontró un corredor con el dorsal #" + dorsal);
+            return;
+        }
+
+        if (punto === "largada") corredor.largada = hora;
+        if (punto === "km50") corredor.km50 = hora;
+        if (punto === "km81") corredor.km81 = hora;
+        if (punto === "meta") {
+            corredor.meta = hora;
+            corredor.estado = "FIN";
+        }
+        if (punto === "dnf") {
+            corredor.km81 = "DNF";
+            corredor.estado = "DNF";
+        }
+
+        document.getElementById('msgEstado').innerText = "¡Tiempo registrado localmente! (Recuerda sincronizar o actualizar tu planilla de Google Sheets)";
+        
+        // Refrescar tabla visual
+        cargarDatosAdmin();
+    }
 </script>
 
 </body>
