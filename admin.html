@@ -3,19 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - La Gran Travesía 100K</title>
+    <title>Panel Técnico — Latitud Sur Expedition</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
+        :root {
+            --lse-dark: #07090e;
+            --lse-card: #0f141f;
+            --lse-border: #1f293d;
+            --lse-orange: #f97316;
+            --lse-gold: #fbbf24;
+            --lse-text: #f3f4f6;
+            --lse-muted: #9ca3af;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #0b1329;
-            color: #ffffff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--lse-dark);
+            color: var(--lse-text);
             margin: 0;
             padding: 20px;
         }
+
         .container { max-width: 1300px; margin: 0 auto; display: none; }
-        h1, h3 { color: #f39c12; text-align: center; }
+        h1, h3 { color: var(--lse-gold); text-align: center; }
+        h1 { font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -23,46 +36,57 @@
             margin-top: 20px;
         }
         @media (max-width: 950px) { .grid { grid-template-columns: 1fr; } }
+        
         .panel {
-            background-color: #162247;
+            background-color: var(--lse-card);
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 1px solid var(--lse-border);
             margin-bottom: 20px;
         }
-        #map { height: 350px; border-radius: 6px; border: 1px solid #2c3e50; margin-bottom: 10px; }
+        #map { height: 300px; border-radius: 6px; border: 1px solid var(--lse-border); margin-bottom: 10px; }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #2c3e50; }
-        th { background-color: #1f2d5a; color: #f39c12; text-transform: uppercase; }
+        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--lse-border); }
+        th { background-color: #131b2e; color: var(--lse-gold); text-transform: uppercase; font-size: 11px; }
+        
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         .form-group { margin-bottom: 10px; }
-        label { display: block; font-size: 11px; color: #95a5a6; margin-bottom: 3px; }
+        label { display: block; font-size: 11px; color: var(--lse-muted); margin-bottom: 3px; }
+        
         input, select {
             width: 100%; padding: 8px; font-size: 13px;
-            border-radius: 4px; border: 1px solid #2c3e50;
-            background-color: #0b1329; color: white; box-sizing: border-box;
+            border-radius: 6px; border: 1px solid var(--lse-border);
+            background-color: var(--lse-dark); color: white; box-sizing: border-box;
+            outline: none;
         }
+        input:focus, select:focus { border-color: var(--lse-orange); }
+
         button {
-            background-color: #f39c12; color: #0b1329; border: none;
-            padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%;
+            background-color: var(--lse-orange); color: #fff; border: none;
+            padding: 10px 15px; font-weight: 700; border-radius: 6px; cursor: pointer; width: 100%;
+            text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;
         }
-        button:hover { background-color: #d35400; color: white; }
-        .btn-danger { background-color: #c0392b; color: white; padding: 4px 8px; font-size: 11px; width: auto; }
-        .btn-danger:hover { background-color: #922b21; }
+        button:hover { background-color: #ea580c; }
+        .btn-danger { background-color: #dc2626; color: white; padding: 4px 8px; font-size: 11px; width: auto; }
+        .btn-danger:hover { background-color: #b91c1c; }
         
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #0b1329; display: flex; justify-content: center; align-items: center; z-index: 9999;
+            background-color: var(--lse-dark); display: flex; justify-content: center; align-items: center; z-index: 9999;
         }
         .login-box {
-            background-color: #162247; padding: 30px; border-radius: 8px; width: 300px; text-align: center;
-            border: 1px solid #2c3e50;
+            background-color: var(--lse-card); padding: 30px; border-radius: 8px; width: 300px; text-align: center;
+            border: 1px solid var(--lse-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
-        .badge { padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
-        .badge-fin { background-color: #27ae60; color: white; }
-        .badge-carrera { background-color: #2980b9; color: white; }
-        .badge-dnf { background-color: #c0392b; color: white; }
-        .my-tooltip { background: #162247; color: #f39c12; border: 1px solid #f39c12; font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
+        
+        .badge { padding: 3px 6px; border-radius: 4px; font-weight: 700; font-size: 11px; }
+        .badge-fin { background-color: #059669; color: white; }
+        .badge-carrera { background-color: #0284c7; color: white; }
+        .badge-dnf { background-color: #dc2626; color: white; }
+        .my-tooltip { background: var(--lse-card); color: var(--lse-gold); border: 1px solid var(--lse-orange); font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -70,30 +94,30 @@
 <!-- INGRESO CON CONTRASEÑA -->
 <div id="loginOverlay">
     <div class="login-box">
-        <h3>Acceso Administrador</h3>
-        <p style="font-size: 12px; color: #95a5a6; margin-bottom: 15px;">Ingrese la contraseña de operación</p>
+        <span style="color: var(--lse-orange); font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">Latitud Sur Expedition</span>
+        <h3 style="margin: 5px 0 15px 0;">Panel de Operaciones</h3>
         <input type="password" id="accessPassword" placeholder="Contraseña..." style="margin-bottom: 15px; text-align: center;" onkeypress="handleKeyPress(event)">
-        <button onclick="verificarPassword()">Ingresar</button>
+        <button onclick="verificarPassword()">Acceder</button>
     </div>
 </div>
 
 <div class="container" id="mainContainer">
-    <h1>PANEL DE CONTROL TÉCNICO - LA GRAN TRAVESÍA 100K</h1>
+    <h1>Panel de Control Técnico — La Gran Travesía 100K</h1>
     
     <div class="grid">
-        <!-- MAPA, GPX Y GESTIÓN DE PUNTOS CON MEMORIA -->
+        <!-- MAPA Y GESTIÓN DE PUNTOS -->
         <div class="panel">
             <h3>Visualización de Ruta &amp; Controles</h3>
             <div id="map"></div>
             
             <div class="form-group" id="gpxLoadContainer" style="margin-top: 10px;">
-                <label id="gpxLabel">1. Cargar archivo GPX de Ruta (Guarda en memoria):</label>
+                <label id="gpxLabel">1. Archivo GPX de Ruta (Guardado en memoria):</label>
                 <input type="file" id="gpxFileInput" accept=".gpx" style="font-size: 12px; padding: 4px;">
             </div>
 
-            <hr style="border: 0; border-top: 1px solid #2c3e50; margin: 15px 0;">
+            <hr style="border: 0; border-top: 1px solid var(--lse-border); margin: 15px 0;">
 
-            <h3>2. Añadir / Editar Puntos de Control</h3>
+            <h3>2. Añadir / Gestionar Puntos de Control</h3>
             <div class="form-row">
                 <div>
                     <label>Nombre del Control:</label>
@@ -106,31 +130,31 @@
             </div>
             <button onclick="agregarPuntoPorKilometro()">Fijar Punto en el Mapa</button>
 
-            <!-- LISTADO DE PUNTOS CREADOS CON OPCIÓN DE ELIMINAR -->
+            <!-- LISTADO DE PUNTOS -->
             <div style="margin-top: 15px;">
-                <label style="color: #f39c12; font-weight: bold; margin-bottom: 5px;">Puntos de Control Configurados:</label>
-                <div style="max-height: 120px; overflow-y: auto; background: #0b1329; padding: 8px; border-radius: 4px; border: 1px solid #2c3e50;">
+                <label style="color: var(--lse-gold); font-weight: bold; margin-bottom: 5px;">Puntos Configurados:</label>
+                <div style="max-height: 90px; overflow-y: auto; background: var(--lse-dark); padding: 8px; border-radius: 6px; border: 1px solid var(--lse-border);">
                     <table style="margin-top: 0;" id="tablaPuntosConfigurados">
                         <tbody id="tbodyPuntosConfigurados">
-                            <tr><td style="color: #95a5a6; font-size: 11px;">No hay puntos creados aún.</td></tr>
+                            <tr><td style="color: var(--lse-muted); font-size: 11px;">No hay puntos creados aún.</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- EDICIÓN RÁPIDA DE ATLETAS -->
+        <!-- EDICIÓN RÁPIDA -->
         <div class="panel">
             <h3>Edición Rápida de Atleta</h3>
             <div class="form-group">
                 <label>Ingrese o Seleccione Dorsal:</label>
-                <input type="text" id="inputDorsalBusqueda" list="listaCorredores" placeholder="Escribe el dorsal (ej. 101) o selecciona..." oninput="cargarDatosCorredorPorInput()">
+                <input type="text" id="inputDorsalBusqueda" list="listaCorredores" placeholder="Escribe el dorsal (ej. 101)..." oninput="cargarDatosCorredorPorInput()">
                 <datalist id="listaCorredores"></datalist>
             </div>
             <div class="form-row">
                 <div>
                     <label>Nombre del Atleta:</label>
-                    <input type="text" id="editNombre" readonly style="background-color: #101935; color: #95a5a6;">
+                    <input type="text" id="editNombre" readonly style="background-color: var(--lse-dark); color: var(--lse-muted);">
                 </div>
                 <div>
                     <label>Estado:</label>
@@ -141,9 +165,9 @@
                     </select>
                 </div>
             </div>
-            <p style="font-size: 11px; color: #f39c12; margin: 8px 0 4px 0;">Nota: Los tiempos de paso se gestionan directamente desde tu Google Sheet.</p>
+            <p style="font-size: 11px; color: var(--lse-orange); margin: 8px 0 4px 0;">Nota: Los tiempos se actualizan automáticamente desde tu Google Sheet.</p>
             <button onclick="guardarCambiosCorredor()">Actualizar Estado Local</button>
-            <p id="msgFeedback" style="font-size: 11px; text-align: center; margin-top: 8px; color: #27ae60;"></p>
+            <p id="msgFeedback" style="font-size: 11px; text-align: center; margin-top: 8px; color: #059669;"></p>
         </div>
     </div>
 
@@ -205,7 +229,7 @@
     let map, gpxLayer;
     let datosEvento = { evento: "", actualizado: "", corredores: [] };
     let puntosCargadosGPX = [];
-    let marcadoresPuestosControl = []; // Almacena los marcadores en el mapa para poder gestionarlos
+    let marcadoresPuestosControl = [];
 
     function initMapa() {
         if (map) return;
@@ -215,7 +239,6 @@
             maxZoom: 18
         }).addTo(map);
 
-        // Recuperar GPX de la memoria local
         const gpxGuardado = localStorage.getItem("gpxRutaGuardada");
         if (gpxGuardado) {
             procesarTextoGPX(gpxGuardado, false);
@@ -229,7 +252,7 @@
             reader.onload = function(evt) {
                 const gpxText = evt.target.result;
                 localStorage.setItem("gpxRutaGuardada", gpxText);
-                localStorage.removeItem("puntosControlGuardados"); // Limpiar puntos anteriores si cambia la ruta
+                localStorage.removeItem("puntosControlGuardados");
                 puntosCreadosAdmin = [];
                 procesarTextoGPX(gpxText, true);
                 document.getElementById('gpxLabel').innerText = "1. Archivo GPX de Ruta (Cargado en memoria):";
@@ -245,12 +268,11 @@
         
         gpxLayer = new L.GPX(gpxText, {
             async: true,
-            polyline_options: { color: '#f39c12', weight: 4, opacity: 0.8 }
+            polyline_options: { color: '#f97316', weight: 4, opacity: 0.9 }
         }).on('loaded', function(e) {
             if (centrarMapa) {
                 map.fitBounds(e.target.getBounds());
             }
-            // Cargar puntos de control guardados en localStorage si existen
             restaurarPuntosGuardados();
         }).addTo(map);
 
@@ -338,7 +360,6 @@
     }
 
     function renderizarPuntosEnMapaYTabla() {
-        // Limpiar marcadores anteriores del mapa
         marcadoresPuestosControl.forEach(m => map.removeLayer(m));
         marcadoresPuestosControl = [];
 
@@ -346,15 +367,15 @@
         tbody.innerHTML = "";
 
         if (puntosCreadosAdmin.length === 0) {
-            tbody.innerHTML = `<tr><td style="color: #95a5a6; font-size: 11px;">No hay puntos creados aún.</td></tr>`;
+            tbody.innerHTML = `<tr><td style="color: var(--lse-muted); font-size: 11px;">No hay puntos creados aún.</td></tr>`;
             return;
         }
 
-        puntosCreadosAdmin.forEach((pt, index) => {
+        puntosCreadosAdmin.forEach((pt) => {
             const latlng = L.latLng(pt.lat, pt.lon);
             const marker = L.circleMarker(latlng, {
                 radius: 8,
-                fillColor: "#e74c3c",
+                fillColor: "#f97316",
                 color: "#fff",
                 weight: 2,
                 fillOpacity: 1
@@ -363,7 +384,6 @@
 
             marcadoresPuestosControl.push(marker);
 
-            // Agregar a la tabla de gestión
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="font-size: 12px;"><b>${pt.nombre}</b></td>
@@ -449,7 +469,7 @@
             <th>Categoría</th>
             <th>Sexo</th>
             <th>Estado</th>
-            <th style="color: #f39c12;">Tiempo Carrera</th>
+            <th style="color: var(--lse-gold);">Tiempo Carrera</th>
         `;
         
         columnasDinamicas.forEach(col => {
@@ -475,7 +495,7 @@
                 <td>${c.categoria || 'INDIVIDUAL'}</td>
                 <td>${c.sexo || 'M'}</td>
                 <td><span class="badge ${badgeClass}">${c.estado}</span></td>
-                <td style="color: #f39c12; font-weight: bold;">${tiempoCarreraVal}</td>
+                <td style="color: var(--lse-gold); font-weight: bold;">${tiempoCarreraVal}</td>
             `;
 
             columnasDinamicas.forEach(col => {
