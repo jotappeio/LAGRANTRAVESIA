@@ -118,29 +118,32 @@
             <div class="form-group"><label>Ubicación:</label><input type="text" id="confUbicacion"></div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label>URL Logo Cabecera:</label><input type="text" id="confLogoCabecera" placeholder="https://..."></div>
-            <div class="form-group"><label>URL Imagen Portada (Banner):</label><input type="text" id="confPortada" placeholder="https://..."></div>
+            <div class="form-group"><label>URL Logo Cabecera:</label><input type="text" id="confLogoCabecera" placeholder="ARCHIVOS/logo.png"></div>
+            <div class="form-group"><label>URL Imagen Portada (Banner):</label><input type="text" id="confPortada" placeholder="ARCHIVOS/portada.jpg"></div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label>URL Logos Auspiciadores (Pie):</label><input type="text" id="confLogoPie" placeholder="https://..."></div>
+            <div class="form-group"><label>URL Logos Auspiciadores (Pie):</label><input type="text" id="confLogoPie" placeholder="ARCHIVOS/auspiciadores.png"></div>
             <div class="form-group"><label>ID Video Vimeo (Ej: 952091357):</label><input type="text" id="vimeoInput" placeholder="952091357"></div>
         </div>
         <button onclick="guardarConfiguracionEvento()" style="width: auto; padding: 8px 20px;">Guardar Configuración General</button>
         <span id="msgConfig" style="font-size: 11px; margin-left: 10px; color: #059669;"></span>
     </div>
 
-    <!-- GESTIÓN DE RUTAS -->
+    <!-- GESTIÓN DE RUTAS POR URL GPX -->
     <div class="grid">
         <!-- RUTA 1 -->
         <div class="panel">
             <h3 style="color: var(--lse-orange);">Gestión Ruta 1</h3>
             <div class="form-group">
                 <label>Nombre Distancia (ej. 100K):</label>
-                <input type="text" id="nombreRuta1" value="100K" onchange="guardarNombresRutas()">
+                <input type="text" id="nombreRuta1" value="100K" onchange="guardarConfiguracionEvento()">
+            </div>
+            <div class="form-group">
+                <label>URL Archivo GPX Ruta 1 (ej. ARCHIVOS/ruta1.gpx):</label>
+                <input type="text" id="urlGpx1" placeholder="ARCHIVOS/ruta1.gpx" onchange="guardarConfiguracionEvento()">
             </div>
             <div id="map1" class="map-admin"></div>
-            <div class="form-group"><label>Subir GPX Ruta 1:</label><input type="file" id="gpxFile1" accept=".gpx" style="font-size:11px; padding:4px;"></div>
-            <div class="form-row">
+            <div class="form-row" style="margin-top: 10px;">
                 <div><label>Nombre del Control:</label><input type="text" id="nombrePC1" placeholder="Ej: PC 1 Km 30"></div>
                 <div><label>Km en Ruta:</label><input type="number" id="kmPC1" placeholder="30" step="0.1"></div>
             </div>
@@ -155,11 +158,14 @@
             <h3 style="color: var(--lse-gold);">Gestión Ruta 2</h3>
             <div class="form-group">
                 <label>Nombre Distancia (ej. 50K):</label>
-                <input type="text" id="nombreRuta2" value="50K" onchange="guardarNombresRutas()">
+                <input type="text" id="nombreRuta2" value="50K" onchange="guardarConfiguracionEvento()">
+            </div>
+            <div class="form-group">
+                <label>URL Archivo GPX Ruta 2 (ej. ARCHIVOS/ruta2.gpx):</label>
+                <input type="text" id="urlGpx2" placeholder="ARCHIVOS/ruta2.gpx" onchange="guardarConfiguracionEvento()">
             </div>
             <div id="map2" class="map-admin"></div>
-            <div class="form-group"><label>Subir GPX Ruta 2:</label><input type="file" id="gpxFile2" accept=".gpx" style="font-size:11px; padding:4px;"></div>
-            <div class="form-row">
+            <div class="form-row" style="margin-top: 10px;">
                 <div><label>Nombre del Control:</label><input type="text" id="nombrePC2" placeholder="Ej: PC 1 Km 20"></div>
                 <div><label>Km en Ruta:</label><input type="number" id="kmPC2" placeholder="20" step="0.1"></div>
             </div>
@@ -242,22 +248,22 @@
         document.getElementById('confLogoPie').value = localStorage.getItem("lse_logo_pie") || "";
         document.getElementById('nombreRuta1').value = localStorage.getItem("lse_nombre_ruta1") || "100K";
         document.getElementById('nombreRuta2').value = localStorage.getItem("lse_nombre_ruta2") || "50K";
+        document.getElementById('urlGpx1').value = localStorage.getItem("lse_url_gpx1") || "";
+        document.getElementById('urlGpx2').value = localStorage.getItem("lse_url_gpx2") || "";
         document.getElementById('vimeoInput').value = localStorage.getItem("lse_vimeo_id") || "952091357";
     }
 
-    function guardarNombresRutas() {
-        localStorage.setItem("lse_nombre_ruta1", document.getElementById('nombreRuta1').value.trim());
-        localStorage.setItem("lse_nombre_ruta2", document.getElementById('nombreRuta2').value.trim());
-    }
-
     function guardarConfiguracionEvento() {
-        guardarNombresRutas();
         localStorage.setItem("lse_evento_nombre", document.getElementById('confNombreEvento').value);
         localStorage.setItem("lse_evento_fecha", document.getElementById('confFecha').value);
         localStorage.setItem("lse_evento_ubicacion", document.getElementById('confUbicacion').value);
         localStorage.setItem("lse_logo_cabecera", document.getElementById('confLogoCabecera').value.trim());
         localStorage.setItem("lse_portada_img", document.getElementById('confPortada').value.trim());
         localStorage.setItem("lse_logo_pie", document.getElementById('confLogoPie').value.trim());
+        localStorage.setItem("lse_nombre_ruta1", document.getElementById('nombreRuta1').value.trim());
+        localStorage.setItem("lse_nombre_ruta2", document.getElementById('nombreRuta2').value.trim());
+        localStorage.setItem("lse_url_gpx1", document.getElementById('urlGpx1').value.trim());
+        localStorage.setItem("lse_url_gpx2", document.getElementById('urlGpx2').value.trim());
         localStorage.setItem("lse_vimeo_id", document.getElementById('vimeoInput').value.trim());
 
         document.getElementById('msgConfig').innerText = "¡Guardado con éxito!";
@@ -274,69 +280,47 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map2);
         }
 
-        // Cargar GPX desde la carpeta o repositorio directamente si el usuario prefiere poner la ruta o subirlo
-        document.getElementById('gpxFile1').addEventListener('change', function(e) {
-            let file = e.target.files[0]; if(!file) return;
-            let r = new FileReader();
-            r.onload = evt => {
-                let gpxText = evt.target.result;
-                procesarGPXTexto(gpxText, 1, true);
-            };
-            r.readAsText(file);
-        });
+        let url1 = localStorage.getItem("lse_url_gpx1");
+        if (url1) cargarGPXPorURL(url1, 1, true);
 
-        document.getElementById('gpxFile2').addEventListener('change', function(e) {
-            let file = e.target.files[0]; if(!file) return;
-            let r = new FileReader();
-            r.onload = evt => {
-                let gpxText = evt.target.result;
-                procesarGPXTexto(gpxText, 2, true);
-            };
-            r.readAsText(file);
-        });
+        let url2 = localStorage.getItem("lse_url_gpx2");
+        if (url2) cargarGPXPorURL(url2, 2, true);
 
-        // Intentar cargar archivos gpx por defecto si están en el repo o localStorage
         restaurarPuntosControlAdmin();
-        
-        // Carga automática de respaldo si existe archivo local o ruta guardada
-        try {
-            fetch('ruta1.gpx').then(res => res.text()).then(txt => procesarGPXTexto(txt, 1, false)).catch(e=>{});
-            fetch('ruta2.gpx').then(res => res.text()).then(txt => procesarGPXTexto(txt, 2, false)).catch(e=>{});
-        } catch(err) {}
     }
 
-    function procesarGPXTexto(gpxText, rutaNum, centrar) {
+    function cargarGPXPorURL(url, rutaNum, centrar) {
         let mapObj = rutaNum === 1 ? map1 : map2;
         let layerObj = rutaNum === 1 ? gpxLayer1 : gpxLayer2;
         if (layerObj) mapObj.removeLayer(layerObj);
 
         let colorRuta = rutaNum === 1 ? '#f97316' : '#fbbf24';
-        let nuevaLayer = new L.GPX(gpxText, { async: true, polyline_options: { color: colorRuta, weight: 4, opacity: 0.9 } })
-            .on('loaded', e => { if (centrar) mapObj.fitBounds(e.target.getBounds()); })
-            .addTo(mapObj);
+        let nuevaLayer = new L.GPX(url, { async: true, polyline_options: { color: colorRuta, weight: 4, opacity: 0.9 } })
+            .on('loaded', e => {
+                if (centrar) mapObj.fitBounds(e.target.getBounds());
+            }).addTo(mapObj);
 
         if (rutaNum === 1) gpxLayer1 = nuevaLayer; else gpxLayer2 = nuevaLayer;
 
-        let parser = new DOMParser();
-        let xml = parser.parseFromString(gpxText, "text/xml");
-        let trkpts = xml.getElementsByTagName("trkpt");
-        let arrPuntos = []; let distAcum = 0, prev = null;
+        // Fetch para extraer los puntos y calcular distancias en km para los puntos de control
+        fetch(url)
+            .then(res => res.text())
+            .then(gpxText => {
+                let parser = new DOMParser();
+                let xml = parser.parseFromString(gpxText, "text/xml");
+                let trkpts = xml.getElementsByTagName("trkpt");
+                let arrPuntos = []; let distAcum = 0, prev = null;
 
-        for (let i = 0; i < trkpts.length; i++) {
-            let lat = parseFloat(trkpts[i].getAttribute("lat"));
-            let lon = parseFloat(trkpts[i].getAttribute("lon"));
-            let curr = L.latLng(lat, lon);
-            if (i > 0 && prev) distAcum += prev.distanceTo(curr);
-            prev = curr;
-            arrPuntos.push({ latlng: curr, distanciaKm: distAcum / 1000 });
-        }
-        if (rutaNum === 1) {
-            puntosGPX1 = arrPuntos;
-            window.gpxCache1 = gpxText;
-        } else {
-            puntosGPX2 = arrPuntos;
-            window.gpxCache2 = gpxText;
-        }
+                for (let i = 0; i < trkpts.length; i++) {
+                    let lat = parseFloat(trkpts[i].getAttribute("lat"));
+                    let lon = parseFloat(trkpts[i].getAttribute("lon"));
+                    let curr = L.latLng(lat, lon);
+                    if (i > 0 && prev) distAcum += prev.distanceTo(curr);
+                    prev = curr;
+                    arrPuntos.push({ latlng: curr, distanciaKm: distAcum / 1000 });
+                }
+                if (rutaNum === 1) puntosGPX1 = arrPuntos; else puntosGPX2 = arrPuntos;
+            }).catch(err => console.log("Error leyendo GPX:", err));
     }
 
     function agregarPuntoControl(rutaNum) {
@@ -350,7 +334,7 @@
         }
 
         if (puntosGPX.length === 0) {
-            alert("Por favor, seleccione y cargue un archivo GPX primero en esta ruta.");
+            alert("Verifique que la URL del GPX sea correcta y se haya cargado en el mapa.");
             return;
         }
 
@@ -519,3 +503,385 @@
 
 </body>
 </html>
+```
+
+---
+
+### 2. Código Actualizado para `index.html` (Lectura de Mapas por URL)
+
+Copia este bloque completo y reemplaza todo el contenido de tu archivo **`index.html`** en GitHub:
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Latitud Sur Expedition</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --lse-dark: #07090e;
+            --lse-card: #0f141f;
+            --lse-border: #1f293d;
+            --lse-orange: #f97316;
+            --lse-gold: #fbbf24;
+            --lse-text: #f3f4f6;
+            --lse-muted: #9ca3af;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--lse-dark);
+            color: var(--lse-text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .brand-header {
+            text-align: center;
+            padding: 10px 0 15px 0;
+            border-bottom: 1px solid var(--lse-border);
+            margin-bottom: 20px;
+        }
+        .brand-header img { max-height: 70px; margin-bottom: 10px; }
+        .brand-header span { color: var(--lse-orange); font-size: 11px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; }
+        .brand-header h1 { margin: 6px 0 4px 0; font-size: 26px; font-weight: 700; color: #ffffff; }
+        .brand-header p { margin: 0; font-size: 13px; color: var(--lse-muted); }
+
+        .event-banner {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--lse-border);
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .map-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .btn-map-tab {
+            background-color: var(--lse-card); color: var(--lse-text); border: 1px solid var(--lse-border);
+            padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 12px; text-transform: uppercase;
+        }
+        .btn-map-tab.active { background-color: var(--lse-orange); border-color: var(--lse-orange); color: white; }
+
+        .map-wrapper {
+            background-color: var(--lse-card); border: 1px solid var(--lse-border);
+            border-radius: 8px; padding: 15px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .map-pane { height: 400px; border-radius: 6px; border: 1px solid var(--lse-border); display: none; width: 100%; }
+        .map-pane.active { display: block; }
+
+        .search-container {
+            background-color: var(--lse-card); border: 1px solid var(--lse-border); border-radius: 8px;
+            padding: 15px; margin-bottom: 25px; display: flex; gap: 15px; flex-wrap: wrap;
+        }
+        .search-container input, .search-container select {
+            flex: 1; min-width: 200px; padding: 12px 15px; font-size: 14px;
+            background-color: var(--lse-dark); border: 1px solid var(--lse-border); color: white; border-radius: 6px; outline: none;
+        }
+
+        .table-container {
+            background-color: var(--lse-card); border: 1px solid var(--lse-border);
+            border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.4); margin-bottom: 30px;
+        }
+        .section-title {
+            background-color: #131b2e; color: var(--lse-gold); padding: 12px 15px;
+            font-size: 14px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--lse-border);
+            display: flex; justify-content: space-between;
+        }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--lse-border); }
+        th { background-color: #0b101c; color: var(--lse-muted); font-weight: 700; text-transform: uppercase; font-size: 11px; }
+        tr:hover { background-color: rgba(249, 115, 22, 0.03); }
+
+        .badge { padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 10px; }
+        .badge-fin { background-color: #059669; color: white; }
+        .badge-carrera { background-color: #0284c7; color: white; }
+        .badge-dnf { background-color: #dc2626; color: white; }
+
+        .pos-badge { background-color: var(--lse-orange); color: white; font-weight: 800; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+        .tiempo-carrera { color: var(--lse-gold); font-weight: 800; }
+        .update-timestamp { text-align: right; font-size: 11px; color: var(--lse-muted); margin-bottom: 8px; }
+        .my-tooltip { background: var(--lse-card); color: var(--lse-gold); border: 1px solid var(--lse-orange); font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
+
+        .video-container {
+            background-color: var(--lse-card); border: 1px solid var(--lse-border);
+            border-radius: 8px; padding: 15px; margin: 30px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.4); text-align: center;
+        }
+        .video-container h3 { color: var(--lse-gold); text-transform: uppercase; font-size: 14px; margin-top: 0; }
+        .video-responsive { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 6px; }
+        .video-responsive iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+
+        .brand-footer { text-align: center; padding: 25px 0; border-top: 1px solid var(--lse-border); margin-top: 20px; }
+        .brand-footer img { max-height: 50px; margin-top: 10px; }
+        .brand-footer p { font-size: 12px; color: var(--lse-muted); margin: 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="brand-header">
+        <div id="logoCabeceraContainer"></div>
+        <span>Latitud Sur Expedition</span>
+        <h1 id="lblNombreEvento">La Gran Travesía 100K</h1>
+        <p id="lblSubInfo">Resultados Oficiales en Tiempo Real</p>
+    </div>
+
+    <div id="portadaContainer"></div>
+
+    <div class="map-selector">
+        <button class="btn-map-tab active" id="tabRuta1" onclick="cambiarMapaPublico(1)">Ver Ruta <span id="lblTab1">100K</span></button>
+        <button class="btn-map-tab" id="tabRuta2" onclick="cambiarMapaPublico(2)">Ver Ruta <span id="lblTab2">50K</span></button>
+    </div>
+
+    <div class="map-wrapper">
+        <div id="mapPublic1" class="map-pane active"></div>
+        <div id="mapPublic2" class="map-pane"></div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Buscar por Nombre o Dorsal..." onkeyup="procesarYRenderizar()">
+        <select id="filtroDistancia" onchange="procesarYRenderizar()">
+            <option value="TODAS">Todas las Distancias</option>
+        </select>
+        <select id="filtroCategoria" onchange="procesarYRenderizar()">
+            <option value="TODAS">Todas las Categorías</option>
+        </select>
+    </div>
+
+    <div id="updateInfo" class="update-timestamp">Actualizando datos...</div>
+    <div id="contenedorSecciones"></div>
+
+    <div class="video-container" id="vimeoSection" style="display:none;">
+        <h3>Video Oficial del Evento</h3>
+        <div class="video-responsive">
+            <iframe id="vimeoIframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div class="brand-footer">
+        <p>Auspiciadores Oficiales</p>
+        <div id="logoPieContainer"></div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('lblNombreEvento').innerText = localStorage.getItem("lse_evento_nombre") || "La Gran Travesía 100K";
+        document.getElementById('pageTitle').innerText = (localStorage.getItem("lse_evento_nombre") || "Evento") + " — LSE";
+        document.getElementById('lblSubInfo').innerText = (localStorage.getItem("lse_evento_fecha") || "") + " • " + (localStorage.getItem("lse_evento_ubicacion") || "");
+
+        let r1 = localStorage.getItem("lse_nombre_ruta1") || "100K";
+        let r2 = localStorage.getItem("lse_nombre_ruta2") || "50K";
+        document.getElementById('lblTab1').innerText = r1;
+        document.getElementById('lblTab2').innerText = r2;
+
+        let cab = localStorage.getItem("lse_logo_cabecera");
+        if (cab && cab.trim() !== "") document.getElementById('logoCabeceraContainer').innerHTML = `<img src="${cab}" alt="Logo">`;
+
+        let portada = localStorage.getItem("lse_portada_img");
+        if (portada && portada.trim() !== "") {
+            document.getElementById('portadaContainer').innerHTML = `<img src="${portada}" class="event-banner" alt="Portada">`;
+        }
+
+        let pie = localStorage.getItem("lse_logo_pie");
+        if (pie && pie.trim() !== "") document.getElementById('logoPieContainer').innerHTML = `<img src="${pie}" alt="Auspiciadores">`;
+
+        let vimeoInput = localStorage.getItem("lse_vimeo_id") || "952091357";
+        let vimeoIdMatch = vimeoInput.match(/(\d+)/);
+        let vimeoId = vimeoIdMatch ? vimeoIdMatch[0] : "952091357";
+
+        if (vimeoId) {
+            document.getElementById('vimeoIframe').src = `https://player.vimeo.com/video/${vimeoId}`;
+            document.getElementById('vimeoSection').style.display = 'block';
+        }
+
+        setTimeout(initMapasPublicos, 300);
+    });
+
+    let mapPub1, mapPub2, bounds1, bounds2;
+
+    function initMapasPublicos() {
+        if (!mapPub1) {
+            mapPub1 = L.map('mapPublic1').setView([-33.35, -70.65], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(mapPub1);
+        }
+        if (!mapPub2) {
+            mapPub2 = L.map('mapPublic2').setView([-33.35, -70.65], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(mapPub2);
+        }
+
+        // Cargar Ruta 1 por URL
+        let url1 = localStorage.getItem("lse_url_gpx1");
+        if (url1 && url1.trim() !== "") {
+            new L.GPX(url1, { async: true, polyline_options: { color: '#f97316', weight: 4, opacity: 0.9 } })
+                .on('loaded', e => {
+                    bounds1 = e.target.getBounds();
+                    mapPub1.fitBounds(bounds1);
+                }).addTo(mapPub1);
+        }
+        let pcs1 = localStorage.getItem("lse_pcs_ruta1");
+        if (pcs1) {
+            JSON.parse(pcs1).forEach(pt => {
+                L.circleMarker([pt.lat, pt.lon], { radius: 8, fillColor: '#f97316', color: "#fff", weight: 2, fillOpacity: 1 })
+                 .addTo(mapPub1).bindTooltip(`<b>${pt.nombre}</b> (Km ${pt.km})`, {permanent: true, direction: 'top', className: 'my-tooltip'});
+            });
+        }
+
+        // Cargar Ruta 2 por URL
+        let url2 = localStorage.getItem("lse_url_gpx2");
+        if (url2 && url2.trim() !== "") {
+            new L.GPX(url2, { async: true, polyline_options: { color: '#fbbf24', weight: 4, opacity: 0.9 } })
+                .on('loaded', e => {
+                    bounds2 = e.target.getBounds();
+                }).addTo(mapPub2);
+        }
+        let pcs2 = localStorage.getItem("lse_pcs_ruta2");
+        if (pcs2) {
+            JSON.parse(pcs2).forEach(pt => {
+                L.circleMarker([pt.lat, pt.lon], { radius: 8, fillColor: '#fbbf24', color: "#fff", weight: 2, fillOpacity: 1 })
+                 .addTo(mapPub2).bindTooltip(`<b>${pt.nombre}</b> (Km ${pt.km})`, {permanent: true, direction: 'top', className: 'my-tooltip'});
+            });
+        }
+
+        setTimeout(() => {
+            if (mapPub1) {
+                mapPub1.invalidateSize();
+                if (bounds1) mapPub1.fitBounds(bounds1);
+            }
+        }, 300);
+    }
+
+    function cambiarMapaPublico(num) {
+        document.getElementById('mapPublic1').classList.remove('active');
+        document.getElementById('mapPublic2').classList.remove('active');
+        document.getElementById('tabRuta1').classList.remove('active');
+        document.getElementById('tabRuta2').classList.remove('active');
+
+        document.getElementById(`mapPublic${num}`).classList.add('active');
+        document.getElementById(`tabRuta${num}`).classList.add('active');
+
+        setTimeout(() => {
+            if (num === 1 && mapPub1) {
+                mapPub1.invalidateSize();
+                if (bounds1) mapPub1.fitBounds(bounds1);
+            }
+            if (num === 2 && mapPub2) {
+                mapPub2.invalidateSize();
+                if (bounds2) mapPub2.fitBounds(bounds2);
+            }
+        }, 150);
+    }
+
+    let todosLosCorredores = [], columnasDinamicasGlobales = [];
+
+    function cargarDatos() {
+        fetch('data.json?t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(data => {
+                todosLosCorredores = data.corredores;
+                document.getElementById('updateInfo').innerText = "Última sincronización: " + data.actualizado;
+                if (todosLosCorredores.length > 0) {
+                    inicializarFiltros(todosLosCorredores);
+                    procesarYRenderizar();
+                }
+            });
+    }
+
+    function inicializarFiltros(corredores) {
+        let p = corredores[0];
+        let ign = ["dorsal", "nombre", "categoria", "distancia", "sexo", "estado", "TIEMPO DE CARRERA"];
+        columnasDinamicasGlobales = Object.keys(p).filter(k => !ign.includes(k));
+
+        let dists = [...new Set(corredores.map(c => c.distancia || "100K"))];
+        let cats = [...new Set(corredores.map(c => c.categoria || "INDIVIDUAL"))];
+
+        let sd = document.getElementById('filtroDistancia');
+        sd.innerHTML = '<option value="TODAS">Todas las Distancias</option>';
+        dists.forEach(d => sd.innerHTML += `<option value="${d}">${d}</option>`);
+
+        let sc = document.getElementById('filtroCategoria');
+        sc.innerHTML = '<option value="TODAS">Todas las Categorías</option>';
+        cats.forEach(c => sc.innerHTML += `<option value="${c}">${c}</option>`);
+    }
+
+    function convertirHoraASegundos(strHora) {
+        if (!strHora || strHora === "-") return 999999;
+        let p = strHora.split(":");
+        if (p.length < 2) return 999999;
+        return (parseInt(p[0]) * 3600) + (parseInt(p[1]) * 60) + (p[2] ? parseInt(p[2]) : 0);
+    }
+
+    function procesarYRenderizar() {
+        let txt = document.getElementById('searchInput').value.toLowerCase();
+        let fd = document.getElementById('filtroDistancia').value;
+        let fc = document.getElementById('filtroCategoria').value;
+
+        let filtrados = todosLosCorredores.filter(c => {
+            let matchTxt = c.name?.toLowerCase().includes(txt) || c.nombre?.toLowerCase().includes(txt) || c.dorsal.toString().includes(txt);
+            let matchDist = (fd === "TODAS" || (c.distancia || "100K") === fd);
+            let matchCat = (fc === "TODAS" || (c.categoria || "INDIVIDUAL") === fc);
+            return matchTxt && matchDist && matchCat;
+        });
+
+        filtrados.sort((a, b) => {
+            let ea = (a.estado||"").toUpperCase(), eb = (b.estado||"").toUpperCase();
+            let fa = ea.includes("FIN")||ea.includes("FINALIZADO"), fb = eb.includes("FIN")||eb.includes("FINALIZADO");
+            if (fa && !fb) return -1; if (!fa && fb) return 1;
+            if (fa && fb) return convertirHoraASegundos(a["TIEMPO DE CARRERA"]) - convertirHoraASegundos(b["TIEMPO DE CARRERA"]);
+            if (ea.includes("DNF") && !eb.includes("DNF")) return 1;
+            if (!ea.includes("DNF") && eb.includes("DNF")) return -1;
+            return 0;
+        });
+
+        let grupos = {};
+        filtrados.forEach(c => {
+            let d = c.distancia || "100K", cat = c.categoria || "INDIVIDUAL", s = c.sexo || "M";
+            let k = `${d} — ${cat} (${s})`;
+            if (!grupos[k]) grupos[k] = [];
+            grupos[k].push(c);
+        });
+
+        let cont = document.getElementById('contenedorSecciones');
+        cont.innerHTML = "";
+        for (let [gNombre, atletas] of Object.entries(grupos)) {
+            let html = `<div class="table-container">
+                <div class="section-title"><span>${gNombre}</span><span style="font-size:11px; color:var(--lse-muted);">${atletas.length} Atletas</span></div>
+                <div style="overflow-x:auto;"><table><thead><tr><th>Pos</th><th>Dorsal</th><th>Atleta</th><th>Estado</th><th style="color:var(--lse-gold);">Tiempo</th>`;
+            columnasDinamicasGlobales.forEach(col => html += `<th>${col}</th>`);
+            html += `</tr></thead><tbody>`;
+
+            atletas.forEach((c, idx) => {
+                let badge = "badge-carrera", eu = (c.estado||"").toUpperCase();
+                if (eu.includes("FIN")||eu.includes("FINALIZADO")) badge = "badge-fin";
+                else if (eu.includes("DNF")) badge = "badge-dnf";
+                let pos = (eu.includes("FIN")||eu.includes("FINALIZADO")) ? `<span class="pos-badge">${idx+1}</span>` : `-`;
+
+                html += `<tr><td>${pos}</td><td><b>#${c.dorsal}</b></td><td>${c.name || c.nombre}</td><td><span class="badge ${badge}">${c.estado}</span></td><td class="tiempo-carrera">${c["TIEMPO DE CARRERA"]||'-'}</td>`;
+                columnasDinamicasGlobales.forEach(col => html += `<td>${c[col]||'-'}</td>`);
+                html += `</tr>`;
+            });
+            html += `</tbody></table></div></div>`;
+            cont.innerHTML += html;
+        }
+    }
+
+    cargarDatos();
+    setInterval(cargarDatos, 15000);
+</script>
+
+</body>
