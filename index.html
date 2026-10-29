@@ -32,6 +32,7 @@
         .badge-fin { background-color: #27ae60; color: white; }
         .badge-carrera { background-color: #2980b9; color: white; }
         .badge-dnf { background-color: #c0392b; color: white; }
+        .tiempo-carrera { color: #f39c12; font-weight: bold; }
         .update-info { text-align: right; font-size: 12px; color: #95a5a6; margin-bottom: 10px; }
     </style>
 </head>
@@ -75,19 +76,24 @@
 
     function construirTabla(corredores) {
         const primerCorredor = corredores[0];
-        // Columnas fijas que ignoramos para la lista dinámica de puntos
+        // Sacamos las fijas y dejamos que las de control y tiempo de carrera entren dinámicas
         const ignorar = ["dorsal", "nombre", "categoria", "estado"];
-        const columnasDinamicas = Object.keys(primerCorredor).filter(k => !ignorar.includes(k));
+        let columnasDinamicas = Object.keys(primerCorredor).filter(k => !ignorar.includes(k));
 
+        // Asegurar que "TIEMPO DE CARRERA" quede al principio o al final según prefieras (aquí la ordenamos antes de los parciales si existe)
         const trHead = document.getElementById('tableHeaders');
         let headHTML = `
             <th>Dorsal</th>
             <th>Atleta</th>
             <th>Categoría</th>
             <th>Estado</th>
+            <th style="color: #f39c12;">Tiempo Carrera</th>
         `;
+        
         columnasDinamicas.forEach(col => {
-            headHTML += `<th>${col}</th>`;
+            if (col.toUpperCase() !== "TIEMPO DE CARRERA") {
+                headHTML += `<th>${col}</th>`;
+            }
         });
         trHead.innerHTML = headHTML;
 
@@ -103,16 +109,21 @@
             if (c.estado === "FIN") badgeClass = "badge-fin";
             if (c.estado === "DNF") badgeClass = "badge-dnf";
 
+            let tiempoCarreraVal = c["TIEMPO DE CARRERA"] || c["tiempo de carrera"] || '-';
+
             let trHTML = `
                 <td><strong>#${c.dorsal}</strong></td>
                 <td>${c.nombre}</td>
                 <td>${c.categoria}</td>
                 <td><span class="badge ${badgeClass}">${c.estado}</span></td>
+                <td class="tiempo-carrera">${tiempoCarreraVal}</td>
             `;
 
             columnasDinamicas.forEach(col => {
-                let valor = c[col] || '-';
-                trHTML += `<td>${valor}</td>`;
+                if (col.toUpperCase() !== "TIEMPO DE CARRERA") {
+                    let valor = c[col] || '-';
+                    trHTML += `<td>${valor}</td>`;
+                }
             });
 
             const tr = document.createElement('tr');
