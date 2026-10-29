@@ -1,39 +1,62 @@
 {
-  "evento": "La Gran Travesía 100K",
-  "actualizado": "2026-10-28 12:00:00",
+  "evento": "La Gran Travesía 100K (Simulación TNF)",
+  "actualizado": "2026-10-29 12:30:00",
+  "puntos_control": [
+    {"id": "LARGADA", "nombre": "Base Camp / Peldehue"},
+    {"id": "KM50", "nombre": "Control Intermedio Km 50"},
+    {"id": "KM81", "nombre": "Control Intermedio Km 81"},
+    {"id": "META", "nombre": "Meta Oficial"}
+  ],
   "corredores": [
     {
       "dorsal": 101,
-      "nombre": "Carlos Soto",
+      "nombre": "Juan Pérez",
       "categoria": "100K Varones",
-      "estado": "En Carrera",
-      "largada": "06:00:00",
-      "pas1_km25": "08:15:00",
-      "pas2_km50": "12:30:00",
-      "pas3_km75": "-",
-      "meta": "-"
+      "estado": "FIN",
+      "largada": "10:00:00",
+      "km50": "18:30:00",
+      "km81": "02:15:00",
+      "meta": "18:45:00"
     },
     {
       "dorsal": 102,
-      "nombre": "María Paz Valenzuela",
+      "nombre": "María González",
       "categoria": "100K Damas",
       "estado": "En Carrera",
-      "largada": "06:00:00",
-      "pas1_km25": "08:10:00",
-      "pas2_km50": "12:15:00",
-      "pas3_km75": "15:40:00",
+      "largada": "10:00:00",
+      "km50": "19:15:00",
+      "km81": "03:40:00",
       "meta": "-"
     },
     {
       "dorsal": 103,
-      "nombre": "Esteban Riquelme",
+      "nombre": "Carlos Silva",
       "categoria": "100K Varones",
+      "estado": "En Carrera",
+      "largada": "10:00:00",
+      "km50": "20:00:00",
+      "km81": "-",
+      "meta": "-"
+    },
+    {
+      "dorsal": 104,
+      "nombre": "Pedro Morales",
+      "categoria": "100K Varones",
+      "estado": "DNF",
+      "largada": "10:00:00",
+      "km50": "21:30:00",
+      "km81": "DNF",
+      "meta": "-"
+    },
+    {
+      "dorsal": 105,
+      "nombre": "Andrea Soto",
+      "categoria": "100K Damas",
       "estado": "FIN",
-      "largada": "06:00:00",
-      "pas1_km25": "07:50:00",
-      "pas2_km50": "11:45:00",
-      "pas3_km75": "14:50:00",
-      "meta": "18:20:00"
+      "largada": "10:00:00",
+      "km50": "17:45:00",
+      "km81": "01:20:00",
+      "meta": "16:30:00"
     }
   ]
 }
