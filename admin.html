@@ -3,127 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Interno - La Gran Travesía 100K</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Panel Admin - La Gran Travesía 100K</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0b1329;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #f39c12;
+            text-align: center;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        .panel {
+            background-color: #162247;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        #map {
+            height: 450px;
+            border-radius: 6px;
+            border: 1px solid #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #2c3e50;
+        }
+        th {
+            background-color: #1f2d5a;
+            color: #f39c12;
+        }
+        .badge {
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .badge-fin { background-color: #27ae60; color: white; }
+        .badge-carrera { background-color: #2980b9; color: white; }
+        .badge-dnf { background-color: #c0392b; color: white; }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
+<body>
+
+<div class="container">
+    <h1>PANEL DE CONTROL INTERNO - LA GRAN TRAVESÍA 100K</h1>
     
-    <!-- Encabezado -->
-    <header class="bg-slate-950 border-b border-slate-800 py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <h1 class="text-lg font-bold tracking-wider text-amber-500 uppercase">Panel Control — 100K</h1>
-            <a href="index.html" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition">Ver Sitio Público ↗</a>
-        </div>
-    </header>
-
-    <main class="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
-        
-        <!-- Estado de Sincronización -->
-        <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700/50 backdrop-blur space-y-3">
-            <h2 class="font-semibold text-slate-200">Gestión de Tiempos y Estado</h2>
-            <p class="text-sm text-slate-400">Aquí puedes simular la actualización del archivo de datos o exportar el control de ruta.</p>
-            
-            <div class="flex flex-wrap gap-3 pt-2">
-                <button onclick="exportarJSON()" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-medium px-4 py-2 rounded-lg text-sm transition shadow-lg shadow-amber-600/20">
-                    Descargar data.json Actualizado
-                </button>
-            </div>
+    <div class="grid">
+        <!-- Panel Izquierdo: Mapa de Ruta y Puntos de Control -->
+        <div class="panel">
+            <h3>Mapa de Ruta & Puestos de Control</h3>
+            <p style="font-size: 12px; color: #95a5a6;">Visualización general del trazado GPX y posición estimada de los controles.</p>
+            <div id="map"></div>
         </div>
 
-        <!-- Tabla de Edición Rápida -->
-        <div class="bg-slate-800/30 rounded-xl border border-slate-700/50 overflow-hidden">
-            <div class="p-4 border-b border-slate-700/50">
-                <h2 class="font-semibold text-slate-200">Listado de Atletas (Edición en Vivo)</h2>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
+        <!-- Panel Derecho: Estado de Competidores en Vivo -->
+        <div class="panel">
+            <h3>Monitoreo de Campo (Data JSON)</h3>
+            <div style="overflow-x: auto;">
+                <table id="adminTable">
                     <thead>
-                        <tr class="bg-slate-800/80 text-slate-400 border-b border-slate-700">
-                            <th class="p-3 font-medium">Dorsal</th>
-                            <th class="p-3 font-medium">Atleta</th>
-                            <th class="p-3 font-medium">Estado</th>
-                            <th class="p-3 font-medium">Meta (HH:MM:SS)</th>
-                            <th class="p-3 font-medium">Acción</th>
+                        <tr>
+                            <th>Dorsal</th>
+                            <th>Atleta</th>
+                            <th>Estado</th>
+                            <th>Último Punto</th>
                         </tr>
                     </thead>
-                    <tbody id="admin-table" class="divide-y divide-slate-800">
-                        <!-- Se llena con JavaScript -->
+                    <tbody id="adminTbody">
+                        <!-- Cargado dinámicamente -->
                     </tbody>
                 </table>
             </div>
         </div>
-    </main>
+    </div>
+</div>
 
-    <script>
-        let datosGlobales = { evento: "La Gran Travesía 100K", actualizado: "", corredores: [] };
+<!-- Leaflet JS y Plugin de GPX -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
 
-        async function cargarDatosAdmin() {
-            try {
-                const response = await fetch('data.json?' + new Date().getTime());
-                datosGlobales = await response.json();
-                renderAdminTable(datosGlobales.corredores);
-            } catch (error) {
-                console.error("Error al cargar datos:", error);
-            }
+<script>
+    // 1. Inicializar el Mapa centrado en la zona (ej. Precordillera / Peldehue)
+    const map = L.map('map').setView([-33.35, -70.65], 11);
+
+    // Capa base de mapa oscuro/técnico (CartoDB Dark Matter)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 18
+    }).addTo(map);
+
+    // 2. Cargar el archivo GPX de la ruta (debe estar en tu repositorio como 'ruta.gpx')
+    // Si aún no subes el GPX, puedes comentar esta sección temporalmente
+    const gpxPath = 'ruta.gpx'; 
+    new L.GPX(gpxPath, {
+        async: true,
+        polyline_options: {
+            color: '#f39c12',
+            weight: 4,
+            opacity: 0.8
+        },
+        marker_options: {
+            startIcon: null,
+            endIcon: null,
+            wptIcons: {}
         }
+    }).on('loaded', function(e) {
+        map.fitBounds(e.target.getBounds());
+    }).addTo(map);
 
-        function renderAdminTable(corredores) {
-            const tbody = document.getElementById('admin-table');
-            tbody.innerHTML = '';
-            
-            corredores.forEach((c, index) => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-800/40 transition";
-                tr.innerHTML = `
-                    <td class="p-3 font-mono font-bold text-amber-400">#${c.dorsal}</td>
-                    <td class="p-3 font-medium text-slate-100">${c.nombre}</td>
-                    <td class="p-3">
-                        <select onchange="cambiarEstado(${index}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200">
-                            <option value="En Carrera" ${c.estado === 'En Carrera' ? 'selected' : ''}>En Carrera</option>
-                            <option value="FIN" ${c.estado === 'FIN' ? 'selected' : ''}>FIN (Llegó)</option>
-                            <option value="DNF" ${c.estado === 'DNF' ? 'selected' : ''}>DNF (Retirado)</option>
-                        </select>
-                    </td>
-                    <td class="p-3">
-                        <input type="text" value="${c.meta}" onchange="cambiarMeta(${index}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono w-24 text-slate-200">
-                    </td>
-                    <td class="p-3">
-                        <button onclick="guardarCambios(${index})" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded text-slate-200 transition">Actualizar</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+    // 3. Puntos de Control Fijos en el Mapa (Coordenadas de referencia aproximadas)
+    const puntosControl = [
+        { nombre: "Base Camp / Largada", coords: [-33.38, -70.68], id: "LARGADA" },
+        { nombre: "Control Km 50", coords: [-33.30, -70.58], id: "KM50" },
+        { nombre: "Control Km 81", coords: [-33.25, -70.50], id: "KM81" },
+        { nombre: "Meta Oficial", coords: [-33.38, -70.68], id: "META" }
+    ];
+
+    puntosControl.forEach(pc => {
+        L.circleMarker(pc.coords, {
+            radius: 8,
+            fillColor: "#e74c3c",
+            color: "#fff",
+            weight: 2,
+            fillOpacity: 1
+        }).addTo(map).bindPopup(`<b>${pc.nombre}</b>`);
+    });
+
+    // 4. Cargar datos de corredores desde data.json
+    function cargarAdminData() {
+        fetch('data.json?t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('adminTbody');
+                tbody.innerHTML = "";
+
+                data.corredores.forEach(c => {
+                    let badgeClass = "badge-carrera";
+                    if (c.estado === "FIN") badgeClass = "badge-fin";
+                    if (c.estado === "DNF") badgeClass = "badge-dnf";
+
+                    // Determinar el último punto alcanzado
+                    let ultimoPunto = "Largada";
+                    if (c.meta && c.meta !== "-") ultimoPunto = "Meta (" + c.meta + ")";
+                    else if (c.km81 && c.km81 !== "-") ultimoPunto = "Km 81 (" + c.km81 + ")";
+                    else if (c.km50 && c.km50 !== "-") ultimoPunto = "Km 50 (" + c.km50 + ")";
+                    else if (c.largada && c.largada !== "-") ultimoPunto = "Largada (" + c.largada + ")";
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>#${c.dorsal}</strong></td>
+                        <td>${c.nombre}</td>
+                        <td><span class="badge ${badgeClass}">${c.estado}</span></td>
+                        <td>${ultimoPunto}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
             });
-        }
+    }
 
-        function cambiarEstado(index, val) {
-            datosGlobales.corredores[index].estado = val;
-        }
+    cargarAdminData();
+    setInterval(cargarAdminData, 15000);
+</script>
 
-        function cambiarMeta(index, val) {
-            datosGlobales.corredores[index].meta = val;
-        }
-
-        function guardarCambios(index) {
-            const ahora = new Date();
-            datosGlobales.actualizado = ahora.toISOString().slice(0, 19).replace('T', ' ');
-            alert(`¡Atleta #${datosGlobales.corredores[index].dorsal} actualizado correctamente en la memoria local! Recuerda descargar el JSON actualizado.`);
-        }
-
-        function exportarJSON() {
-            const ahora = new Date();
-            datosGlobales.actualizado = ahora.toISOString().slice(0, 19).replace('T', ' ');
-            
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datosGlobales, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "data.json");
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        cargarDatosAdmin();
-    </script>
 </body>
 </html>
