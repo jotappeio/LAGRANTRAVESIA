@@ -1,16 +1,16 @@
 {
   "evento": "La Gran Travesía 100K",
-  "actualizado": "2026-10-29 00:44:38",
+  "actualizado": "2026-10-29 01:20:27",
   "corredores": [
     {
       "dorsal": 101,
       "nombre": "Juan Pérez",
       "categoria": "100K",
-      "estado": "FIN",
+      "estado": "En Carrera",
       "largada": "10:00:00",
-      "km50": "18:30:00",
-      "km81": "2:15:00",
-      "meta": "18:45:00"
+      "km50": "-",
+      "km81": "-",
+      "meta": "-"
     },
     {
       "dorsal": 102,
@@ -18,8 +18,8 @@
       "categoria": "100K",
       "estado": "En Carrera",
       "largada": "10:00:00",
-      "km50": "19:15:00",
-      "km81": "3:40:00",
+      "km50": "-",
+      "km81": "-",
       "meta": "-"
     },
     {
@@ -28,7 +28,7 @@
       "categoria": "100K",
       "estado": "En Carrera",
       "largada": "10:00:00",
-      "km50": "20:00:00",
+      "km50": "-",
       "km81": "-",
       "meta": "-"
     },
@@ -36,21 +36,21 @@
       "dorsal": 104,
       "nombre": "Pedro Morales",
       "categoria": "100K",
-      "estado": "DNF",
+      "estado": "En Carrera",
       "largada": "10:00:00",
-      "km50": "21:30:00",
-      "km81": "DNF",
+      "km50": "-",
+      "km81": "-",
       "meta": "-"
     },
     {
       "dorsal": 105,
       "nombre": "Andrea Soto",
       "categoria": "100K",
-      "estado": "FIN",
+      "estado": "En Carrera",
       "largada": "10:00:00",
-      "km50": "17:45:00",
-      "km81": "1:20:00",
-      "meta": "16:30:00"
+      "km50": "-",
+      "km81": "-",
+      "meta": "-"
     }
   ]
 }
