@@ -78,20 +78,13 @@
         }
         .login-box {
             background-color: var(--lse-card); padding: 30px; border-radius: 8px; width: 300px; text-align: center;
-            border: 1px solid var(--lse-border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            border: 1px solid var(--lse-border); box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
         
         .section-title {
-            background-color: #131b2e;
-            color: var(--lse-gold);
-            padding: 10px 12px;
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--lse-border);
-            display: flex;
-            justify-content: space-between;
+            background-color: #131b2e; color: var(--lse-gold); padding: 10px 12px;
+            font-size: 13px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--lse-border);
+            display: flex; justify-content: space-between;
         }
 
         .badge { padding: 3px 6px; border-radius: 4px; font-weight: 700; font-size: 11px; }
@@ -115,7 +108,7 @@
 </div>
 
 <div class="container" id="mainContainer">
-    <h1>Panel de Control Técnico — Múltiples Distancias</h1>
+    <h1>Panel de Control Técnico — Múltiples Distancias Vinculadas</h1>
     
     <!-- CONFIGURACIÓN GENERAL -->
     <div class="panel">
@@ -129,15 +122,18 @@
             <div class="form-group"><label>Logo Cabecera:</label><input type="file" id="logoCabeceraInput" accept="image/*" style="font-size:11px; padding:4px;"></div>
             <div class="form-group"><label>Logos Auspiciadores (Pie):</label><input type="file" id="logoPieInput" accept="image/*" style="font-size:11px; padding:4px;"></div>
         </div>
-        <button onclick="guardarConfiguracionEvento()" style="width: auto; padding: 8px 20px;">Guardar Configuración</button>
+        <button onclick="guardarConfiguracionEvento()" style="width: auto; padding: 8px 20px;">Guardar Configuración General</button>
     </div>
 
-    <!-- GESTIÓN INDEPENDIENTE DE MAPAS (DISTANCIA 1 Y DISTANCIA 2) -->
+    <!-- GESTIÓN DE RUTAS VINCULADAS A DISTANCIAS -->
     <div class="grid">
-        <!-- RUTA 1 (Ej: 100K) -->
+        <!-- RUTA 1 -->
         <div class="panel">
-            <h3 style="color: var(--lse-orange);">Gestión Ruta 1 (Ej: 100K)</h3>
-            <div class="form-group"><label>Nombre de Distancia 1:</label><input type="text" id="nombreRuta1" value="100K"></div>
+            <h3 style="color: var(--lse-orange);">Gestión Ruta 1</h3>
+            <div class="form-group">
+                <label>Asociar a Nombre de Distancia (ej. 100K):</label>
+                <input type="text" id="nombreRuta1" value="100K" placeholder="Debe coincidir exactamente con la columna Distancia del Sheet" onchange="guardarNombresRutas()">
+            </div>
             <div id="map1" class="map-admin"></div>
             <div class="form-group"><label>Subir GPX Ruta 1:</label><input type="file" id="gpxFile1" accept=".gpx" style="font-size:11px; padding:4px;"></div>
             <div class="form-row">
@@ -146,14 +142,17 @@
             </div>
             <button onclick="agregarPuntoControl(1)">Fijar Punto en Ruta 1</button>
             <div style="margin-top: 10px; max-height: 80px; overflow-y: auto;">
-                <table id="tablaPC1"><tbody id="tbodyPC1"><tr><td style="color:var(--lse-muted);font-size:11px;">Sin puntos en Ruta 1.</td></tr></tbody></table>
+                <table id="tablaPC1"><tbody id="tbodyPC1"><tr><td style="color:var(--lse-muted);font-size:11px;">Sin puntos configurados.</td></tr></tbody></table>
             </div>
         </div>
 
-        <!-- RUTA 2 (Ej: 50K) -->
+        <!-- RUTA 2 -->
         <div class="panel">
-            <h3 style="color: var(--lse-gold);">Gestión Ruta 2 (Ej: 50K)</h3>
-            <div class="form-group"><label>Nombre de Distancia 2:</label><input type="text" id="nombreRuta2" value="50K"></div>
+            <h3 style="color: var(--lse-gold);">Gestión Ruta 2</h3>
+            <div class="form-group">
+                <label>Asociar a Nombre de Distancia (ej. 50K):</label>
+                <input type="text" id="nombreRuta2" value="50K" placeholder="Debe coincidir exactamente con la columna Distancia del Sheet" onchange="guardarNombresRutas()">
+            </div>
             <div id="map2" class="map-admin"></div>
             <div class="form-group"><label>Subir GPX Ruta 2:</label><input type="file" id="gpxFile2" accept=".gpx" style="font-size:11px; padding:4px;"></div>
             <div class="form-row">
@@ -162,7 +161,7 @@
             </div>
             <button onclick="agregarPuntoControl(2)">Fijar Punto en Ruta 2</button>
             <div style="margin-top: 10px; max-height: 80px; overflow-y: auto;">
-                <table id="tablaPC2"><tbody id="tbodyPC2"><tr><td style="color:var(--lse-muted);font-size:11px;">Sin puntos en Ruta 2.</td></tr></tbody></table>
+                <table id="tablaPC2"><tbody id="tbodyPC2"><tr><td style="color:var(--lse-muted);font-size:11px;">Sin puntos configurados.</td></tr></tbody></table>
             </div>
         </div>
     </div>
@@ -241,18 +240,22 @@
         document.getElementById('nombreRuta2').value = localStorage.getItem("lse_nombre_ruta2") || "50K";
     }
 
+    function guardarNombresRutas() {
+        localStorage.setItem("lse_nombre_ruta1", document.getElementById('nombreRuta1').value.trim());
+        localStorage.setItem("lse_nombre_ruta2", document.getElementById('nombreRuta2').value.trim());
+    }
+
     function guardarConfiguracionEvento() {
+        guardarNombresRutas();
         localStorage.setItem("lse_evento_nombre", document.getElementById('confNombreEvento').value);
         localStorage.setItem("lse_evento_fecha", document.getElementById('confFecha').value);
         localStorage.setItem("lse_evento_ubicacion", document.getElementById('confUbicacion').value);
-        localStorage.setItem("lse_nombre_ruta1", document.getElementById('nombreRuta1').value);
-        localStorage.setItem("lse_nombre_ruta2", document.getElementById('nombreRuta2').value);
 
         const f1 = document.getElementById('logoCabeceraInput').files[0];
         if (f1) { let r = new FileReader(); r.onload = e => localStorage.setItem("lse_logo_cabecera", e.target.result); r.readAsDataURL(f1); }
         const f2 = document.getElementById('logoPieInput').files[0];
         if (f2) { let r = new FileReader(); r.onload = e => localStorage.setItem("lse_logo_pie", e.target.result); r.readAsDataURL(f2); }
-        alert("¡Configuración guardada!");
+        alert("¡Configuración guardada exitosamente!");
     }
 
     function initMapasAdmin() {
@@ -265,13 +268,11 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map2);
         }
 
-        // Cargar GPX guardados
         const gpx1 = localStorage.getItem("lse_gpx_ruta1");
         if (gpx1) procesarGPXTexto(gpx1, 1, false);
         const gpx2 = localStorage.getItem("lse_gpx_ruta2");
         if (gpx2) procesarGPXTexto(gpx2, 2, false);
 
-        // Listeners archivos GPX
         document.getElementById('gpxFile1').addEventListener('change', function(e) {
             let file = e.target.files[0];
             if(!file) return;
@@ -314,7 +315,6 @@
 
         if (rutaNum === 1) gpxLayer1 = nuevaLayer; else gpxLayer2 = nuevaLayer;
 
-        // Extraer puntos geográficos para calcular km
         let parser = new DOMParser();
         let xml = parser.parseFromString(gpxText, "text/xml");
         let trkpts = xml.getElementsByTagName("trkpt");
@@ -402,7 +402,7 @@
         tbody.innerHTML = "";
 
         if (puntos.length === 0) {
-            tbody.innerHTML = `<tr><td style="color:var(--lse-muted);font-size:11px;">Sin puntos en Ruta ${rutaNum}.</td></tr>`;
+            tbody.innerHTML = `<tr><td style="color:var(--lse-muted);font-size:11px;">Sin puntos configurados.</td></tr>`;
             return;
         }
 
